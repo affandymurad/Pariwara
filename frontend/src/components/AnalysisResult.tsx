@@ -54,7 +54,46 @@ export default function AnalysisResult({ formData, onReset }: Props) {
     if (!source) return;
 
     const actionBar = document.getElementById('pariwara-action-bar');
-    const previousActionBarDisplay = actionBar?.style.display;
+
+    // html2canvas cannot parse color-mix() or modern CSS color functions.
+    // 1) Override all CSS vars on :root to plain hex values
+    // 2) Walk all child elements and strip any inline style containing color-mix/color(
+    const SAFE: Record<string, string> = {
+      '--bg-primary':  '#F7F4F0',
+      '--bg-surface':  '#FDFCF9',
+      '--bg-card':     '#FFFFFF',
+      '--bg-stone':    '#F5F2EE',
+      '--text-ink':    '#1E1B18',
+      '--text-ink2':   '#3A3630',
+      '--text-muted':  '#7A7065',
+      '--border':      'rgba(0,0,0,0.09)',
+      '--sage':        '#6B8F71',
+      '--sage-light':  '#EAF2EB',
+      '--sage-dark':   '#3D5C42',
+      '--amber':       '#C98A3A',
+      '--amber-light': '#FDF3E3',
+    };
+
+    const root = document.documentElement;
+    const prevVars: Record<string, string> = {};
+    Object.entries(SAFE).forEach(([k, v]) => {
+      prevVars[k] = root.style.getPropertyValue(k);
+      root.style.setProperty(k, v);
+    });
+
+    const allEls = document.querySelectorAll<HTMLElement>('*');
+    const stripped: Array<{ el: HTMLElement; prop: string; prev: string }> = [];
+    allEls.forEach(el => {
+      const s = el.style;
+      for (let i = s.length - 1; i >= 0; i--) {
+        const prop = s[i];
+        const val  = s.getPropertyValue(prop);
+        if (val.includes('color-mix(') || val.includes('color(')) {
+          stripped.push({ el, prop, prev: val });
+          s.removeProperty(prop);
+        }
+      }
+    });
 
     try {
       if (actionBar) actionBar.style.display = 'none';
@@ -71,6 +110,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
         scrollY: 0,
         windowWidth: source.scrollWidth,
         windowHeight: source.scrollHeight,
+        ignoreElements: (el: Element) => el.id === 'pariwara-action-bar',
       });
 
       const pdf = new jsPDF({
@@ -142,7 +182,12 @@ export default function AnalysisResult({ formData, onReset }: Props) {
 
       pdf.save(`Laporan_Pariwara_${safeName || 'Analisis'}.pdf`);
     } finally {
-      if (actionBar) actionBar.style.display = previousActionBarDisplay ?? '';
+      if (actionBar) actionBar.style.display = '';
+      Object.entries(prevVars).forEach(([k, v]) => {
+        if (v) root.style.setProperty(k, v);
+        else root.style.removeProperty(k);
+      });
+      stripped.forEach(({ el, prop, prev }) => el.style.setProperty(prop, prev));
     }
   };
 
