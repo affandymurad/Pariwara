@@ -1,40 +1,48 @@
-import { useState } from "react";
-import type { PariwaraFormData, AIRecommendation } from "../types";
+import { useState } from 'react';
+import type { PariwaraFormData, AIRecommendation } from '../types';
 
-// In dev: netlify dev proxies /api/* → /.netlify/functions/*
-// In prod: same path, Netlify handles routing via netlify.toml redirect
-const ENDPOINT = (import.meta.env.VITE_API_URL ?? "") + "/api/analyze";
+// Lokal: VITE_API_URL=http://localhost:3001 → fetch ke Express
+// Netlify: VITE_API_URL tidak di-set → path relatif → Netlify Function
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 export function useAnalyze() {
   const [loading, setLoading] = useState(false);
   const [error,   setError  ] = useState<string | null>(null);
 
-  async function analyze(data: PariwaraFormData): Promise<AIRecommendation | null> {
+  async function analyze(formData: PariwaraFormData): Promise<AIRecommendation | null> {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(ENDPOINT, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`${API_BASE}/api/analyze`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productName:         data.productName,
-          productDetail:       data.productDetail,
-          selectedMedia:       data.selectedMedia,
-          selectedGenerations: data.selectedGenerations,
-          locations:           data.locations,
+          productName:         formData.productName,
+          productDetail:       formData.productDetail,
+          productUrls:         formData.productUrls,
+          selectedMedia:       formData.selectedMedia,
+          selectedGenerations: formData.selectedGenerations,
+          locations:           formData.locations,
         }),
       });
 
-      const json = await res.json();
-
-      if (!res.ok || !json.success) {
-        throw new Error(json.error ?? `HTTP ${res.status}`);
+      // Guard: kalau response bukan JSON (misal HTML 404 dari Netlify),
+      // tangkap di sini sebelum .json() throw error yang membingungkan
+      const contentType = res.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Server error ${res.status}: function tidak ditemukan. Cek konfigurasi Netlify.`);
       }
 
-      return json.recommendation as AIRecommendation;
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+
+      return data.recommendation as AIRecommendation;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.');
       return null;
     } finally {
       setLoading(false);

@@ -6,7 +6,8 @@ export interface PhotoItem {
 
 export interface PariwaraFormData {
   productName:         string;
-  productDetail:       string; // deskripsi + USP gabungan
+  productDetail:       string;
+  productUrls:         string[]; // link marketplace / website / WhatsApp (array)
   photos:              PhotoItem[];
   selectedMedia:       string[];
   selectedGenerations: string[];
@@ -39,6 +40,12 @@ export interface AIRecommendation {
   quickWins:             string[];
 }
 
+export interface AnalyzeAPIResponse {
+  success:        boolean;
+  recommendation: AIRecommendation;
+  error?:         string;
+}
+
 export interface MediaCategory {
   id:          string;
   name:        string;
@@ -58,6 +65,6 @@ export interface CreativeSubsector {
   name:       string;
   workers:    number;
   percentage: number;
+  colorClass: string;
   icon:       string;
-  barColor:   string;
 }
