@@ -1,0 +1,58 @@
+import React from "react";
+import { Sparkles, User } from "lucide-react";
+
+export default function Header() {
+  return (
+    <header
+      className="sticky top-0 z-50 border-b border-theme"
+      style={{
+        background: "color-mix(in srgb, var(--bg-surface) 90%, transparent)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div className="max-w-md mx-auto flex items-center justify-between px-4 py-3">
+        {/* Brand */}
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
+            style={{ background: "var(--sage)" }}
+          >
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <h1 className="text-xl font-display font-bold leading-none text-ink">
+              Pariwara
+            </h1>
+            <p className="text-[9px] font-code text-muted uppercase tracking-widest mt-0.5">
+              Asisten Strategi Iklan Ekraf
+            </p>
+          </div>
+        </div>
+
+        {/* Right: badge + author */}
+        <div className="flex items-center gap-2">
+          <span
+            className="hidden sm:block text-[10px] font-code font-semibold px-2.5 py-1 rounded-full border border-theme"
+            style={{ background: "var(--bg-stone)", color: "var(--text-muted)" }}
+          >
+            v2.0 · 2024 Stats
+          </span>
+          <a
+            href="https://affandymurad.github.io/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-full border transition-all hover:opacity-75"
+            style={{
+              background:   "var(--sage-light)",
+              color:        "var(--sage-dark)",
+              borderColor:  "var(--sage-light)",
+            }}
+          >
+            <User className="w-3 h-3" />
+            Affandy Murad
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}

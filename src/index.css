@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary:  #F7F4F0;
+    --bg-surface:  #FDFCF9;
+    --bg-card:     #FFFFFF;
+    --bg-stone:    #F5F2EE;
+    --text-ink:    #1E1B18;
+    --text-ink2:   #3A3630;
+    --text-muted:  #7A7065;
+    --border:      rgba(0, 0, 0, 0.09);
+    --sage:        #6B8F71;
+    --sage-light:  #EAF2EB;
+    --sage-dark:   #3D5C42;
+    --amber:       #C98A3A;
+    --amber-light: #FDF3E3;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary:  #0F0E0C;
+      --bg-surface:  #161412;
+      --bg-card:     #1A1815;
+      --bg-stone:    #1E1C19;
+      --text-ink:    #F0EDE8;
+      --text-ink2:   #D0CCC6;
+      --text-muted:  #7A7268;
+      --border:      rgba(255, 255, 255, 0.09);
+      --sage:        #7BA882;
+      --sage-light:  #1A2E1C;
+      --sage-dark:   #9EC4A2;
+      --amber:       #D4943E;
+      --amber-light: #2A1F0A;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    background-color: var(--bg-primary);
+    color: var(--text-ink);
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--sage-light);
+    color: var(--sage-dark);
+  }
+}
+
+@layer components {
+  /* ── Cards ─────────────────────────────────────────── */
+  .card {
+    @apply rounded-2xl border;
+    background-color: var(--bg-card);
+    border-color: var(--border);
+  }
+
+  /* ── Buttons ────────────────────────────────────────── */
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 w-full h-12 rounded-xl
+           font-bold text-sm text-white transition-all active:scale-[0.98];
+    background-color: var(--sage);
+  }
+  .btn-primary:hover:not(:disabled) { filter: brightness(0.88); }
+  .btn-primary:disabled {
+    background-color: var(--border);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 w-full h-11 rounded-xl
+           font-bold text-sm transition-all active:scale-[0.98] border;
+    color: var(--text-ink2);
+    border-color: var(--border);
+    background-color: transparent;
+  }
+  .btn-secondary:hover { background-color: var(--bg-stone); }
+
+  /* ── Form fields ────────────────────────────────────── */
+  .field-label {
+    @apply block text-[10px] font-bold uppercase tracking-[0.08em] font-mono mb-1.5;
+    color: var(--text-ink2);
+  }
+
+  .text-field {
+    @apply w-full rounded-xl px-4 py-3 text-sm outline-none transition-all;
+    font-family: inherit;
+    background-color: var(--bg-stone);
+    border: 1.5px solid var(--border);
+    color: var(--text-ink);
+  }
+  .text-field::placeholder { color: var(--text-muted); opacity: 0.6; }
+  .text-field:focus {
+    border-color: var(--sage);
+    background-color: var(--bg-card);
+    box-shadow: 0 0 0 3px var(--sage-light);
+  }
+
+  /* ── Choice cards ───────────────────────────────────── */
+  .choice-card {
+    @apply flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all;
+    border: 1.5px solid var(--border);
+    background-color: var(--bg-stone);
+  }
+  .choice-card:hover { border-color: var(--text-muted); }
+  .choice-card.selected {
+    border-color: var(--sage);
+    background-color: var(--sage-light);
+  }
+
+  /* ── Module icon ────────────────────────────────────── */
+  .mod-icon {
+    @apply w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0;
+  }
+  .mod-icon-sage  { background-color: var(--sage-light);  color: var(--sage);  }
+  .mod-icon-amber { background-color: var(--amber-light); color: var(--amber); }
+  .mod-icon-stone { background-color: var(--bg-stone);    color: var(--text-muted); }
+
+  /* ── Progress ───────────────────────────────────────── */
+  .progress-track {
+    @apply h-1.5 rounded-full overflow-hidden;
+    background-color: var(--border);
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-300;
+    background-color: var(--sage);
+  }
+
+  /* ── Tag / chip ─────────────────────────────────────── */
+  .param-tag {
+    @apply text-[10px] font-semibold px-2.5 py-1 rounded-full border;
+    border-color: var(--border);
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: "Playfair Display", ui-serif, Georgia, serif; }
+  .font-code    { font-family: "Fira Code", ui-monospace, monospace; }
+
+  .text-ink   { color: var(--text-ink);   }
+  .text-ink2  { color: var(--text-ink2);  }
+  .text-muted { color: var(--text-muted); }
+  .text-sage  { color: var(--sage);       }
+  .text-amber { color: var(--amber);      }
+
+  .bg-card    { background-color: var(--bg-card);    }
+  .bg-stone   { background-color: var(--bg-stone);   }
+  .bg-sage-l  { background-color: var(--sage-light); }
+  .bg-amber-l { background-color: var(--amber-light);}
+
+  .border-theme { border-color: var(--border); }
+  .border-sage  { border-color: var(--sage);   }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0);   }
+  }
+  .fade-up { animation: fadeUp 0.22s ease both; }
+}
