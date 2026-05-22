@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import type { PariwaraFormData, AIRecommendation } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+// Lokal: VITE_API_URL=http://localhost:3001 → fetch ke Express
+// Netlify: VITE_API_URL tidak di-set → path relatif → Netlify Function
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 export function useAnalyze() {
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [error,   setError  ] = useState<string | null>(null);
 
   async function analyze(formData: PariwaraFormData): Promise<AIRecommendation | null> {
     setLoading(true);
@@ -18,12 +20,19 @@ export function useAnalyze() {
         body: JSON.stringify({
           productName:         formData.productName,
           productDetail:       formData.productDetail,
-          productUrl:          formData.productUrl,
+          productUrls:         formData.productUrls,
           selectedMedia:       formData.selectedMedia,
           selectedGenerations: formData.selectedGenerations,
           locations:           formData.locations,
         }),
       });
+
+      // Guard: kalau response bukan JSON (misal HTML 404 dari Netlify),
+      // tangkap di sini sebelum .json() throw error yang membingungkan
+      const contentType = res.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Server error ${res.status}: function tidak ditemukan. Cek konfigurasi Netlify.`);
+      }
 
       const data = await res.json();
 
@@ -33,8 +42,7 @@ export function useAnalyze() {
 
       return data.recommendation as AIRecommendation;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.');
       return null;
     } finally {
       setLoading(false);

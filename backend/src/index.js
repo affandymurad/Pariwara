@@ -11,7 +11,6 @@ app.use(express.json({ limit: '10mb' }));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// ─── Label maps ───────────────────────────────────────────────
 const MEDIA_LABELS = {
   socmed:      'Media Sosial (Instagram, TikTok, Facebook, WhatsApp)',
   digital_ads: 'Iklan Digital & Web (Google Ads, SEO, Portal Berita)',
@@ -28,16 +27,14 @@ const GEN_LABELS = {
   boomers:   'Baby Boomers (1946–1964) — layanan personal, teks jelas, Grup WA & FB',
 };
 
-// ─── Health check ─────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
-// ─── POST /api/analyze ────────────────────────────────────────
 app.post('/api/analyze', async (req, res) => {
   try {
     const {
       productName,
       productDetail,
-      productUrl          = '',
+      productUrls         = [],
       selectedMedia       = [],
       selectedGenerations = [],
       locations           = [],
@@ -50,9 +47,7 @@ app.post('/api/analyze', async (req, res) => {
     const mediaTxt = selectedMedia.map(id => `  - ${MEDIA_LABELS[id] ?? id}`).join('\n') || '  - (tidak dipilih)';
     const genTxt   = selectedGenerations.map(id => `  - ${GEN_LABELS[id] ?? id}`).join('\n') || '  - (tidak dipilih)';
     const locTxt   = locations.join(', ') || '(tidak ditentukan)';
-    const urlLine  = productUrl?.trim()
-      ? `- Link Produk (marketplace/website/WA): ${productUrl.trim()}\n  Analisis link ini: identifikasi platform penjualan, format CTA yang sesuai, dan optimalkan strategi berdasarkan saluran tersebut.`
-      : '- Link Produk: (tidak diisi)';
+    const urlTxt   = productUrls.length ? productUrls.join(', ') : '(tidak disertakan)';
 
     const prompt = `Kamu adalah konsultan periklanan senior spesialis Ekonomi Kreatif Indonesia (Ekraf).
 Tugasmu: buat rekomendasi strategi iklan yang sangat spesifik, actionable, dan berbasis data.
@@ -61,7 +56,7 @@ Tugasmu: buat rekomendasi strategi iklan yang sangat spesifik, actionable, dan b
 PROFIL PRODUK:
 - Nama Produk/Brand: ${productName}
 - Deskripsi & Keunggulan: ${productDetail?.trim() || '(tidak diisi)'}
-${urlLine}
+- Link Produk (marketplace/website/WA): ${urlTxt}
 
 PARAMETER KAMPANYE:
 - Saluran Media:
@@ -78,7 +73,7 @@ Balas HANYA JSON valid, tanpa markdown backtick, tanpa teks lain di luar JSON.
   "recommendedPlatforms": [
     {
       "name": "string (maks 50 karakter)",
-      "description": "string (1-2 kalimat, apa & kenapa cocok — jika ada link produk, sebutkan relevansinya dengan platform tersebut)",
+      "description": "string (1-2 kalimat, apa & kenapa cocok)",
       "reasoning": "string (alasan strategis berdasarkan demografi & media, 1 kalimat)",
       "icon": "string (salah satu: Flame|Laptop|Globe|Users|BookOpen|Tv|Smartphone)"
     }
@@ -86,29 +81,30 @@ Balas HANYA JSON valid, tanpa markdown backtick, tanpa teks lain di luar JSON.
   "copywritingStyles": [
     {
       "title": "string (nama gaya & target, maks 60 karakter)",
-      "example": "string (contoh teks iklan NYATA untuk ${productName}, pakai emoji, langsung bisa dipakai — jika ada link produk, sertakan CTA yang mengarahkan ke link tersebut)",
+      "example": "string (contoh teks iklan NYATA untuk ${productName}, pakai emoji, langsung bisa dipakai, sertakan link ${urlTxt !== '(tidak disertakan)' ? urlTxt.split(',')[0].trim() : ''} jika relevan)",
       "tips": "string (1-2 tip praktis)"
     }
   ],
   "marketplaceStrategies": [
     {
       "title": "string (judul strategi, maks 60 karakter)",
-      "details": "string (penjelasan strategi yang spesifik untuk saluran terkait dari daftar: ${locTxt} — jika ada link produk, sebutkan cara mengoptimalkan listing/profil di saluran tersebut, 2-3 kalimat)",
+      "details": "string (penjelasan strategi yang spesifik untuk saluran terkait dari daftar: ${locTxt} — bisa marketplace, platform sosmed, kota, atau saluran lain, 2-3 kalimat)",
       "actionItems": ["string (aksi konkret 1)", "string (aksi konkret 2)", "string (aksi konkret 3)"]
     }
   ],
   "quickWins": [
-    "string (aksi konkret yang bisa dilakukan hari ini atau minggu ini — jika ada link produk, salah satu quick win harus terkait optimasi link tersebut)"
+    "string (aksi konkret yang bisa dilakukan hari ini atau minggu ini)"
   ]
 }
 
 KETENTUAN:
 - recommendedPlatforms: 3-4 item sesuai media & generasi dipilih
 - copywritingStyles: 1 gaya per generasi dipilih (maks 3)
-- marketplaceStrategies: 2-3 strategi, masing-masing fokus pada satu saluran dari daftar (${locTxt}) — bisa marketplace, platform sosmed, kota target, atau saluran offline
+- marketplaceStrategies: 2-3 strategi, masing-masing fokus pada satu saluran dari daftar (${locTxt})
 - quickWins: tepat 3 item, sangat actionable
 - Bahasa Indonesia natural, mudah dipahami UMKM
 - Contoh copywriting HARUS sebut nama "${productName}" secara eksplisit
+- Jika link produk tersedia, sertakan dalam contoh copywriting sebagai CTA
 - Jangan output apapun di luar JSON`;
 
     const message = await anthropic.messages.create({
@@ -117,15 +113,8 @@ KETENTUAN:
       messages:   [{ role: 'user', content: prompt }],
     });
 
-    const rawText = message.content
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('');
-
-    const cleaned = rawText
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
+    const rawText = message.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
     let parsed;
     try {
@@ -139,11 +128,8 @@ KETENTUAN:
 
   } catch (err) {
     console.error('API error:', err?.message || err);
-    const status = err?.status || 500;
-    res.status(status).json({ error: err?.message || 'Terjadi kesalahan server.' });
+    res.status(err?.status || 500).json({ error: err?.message || 'Terjadi kesalahan server.' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`✅  Pariwara Backend running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅  Pariwara Backend running on http://localhost:${PORT}`));
