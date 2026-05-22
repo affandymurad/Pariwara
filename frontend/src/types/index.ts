@@ -7,12 +7,13 @@ export interface PhotoItem {
 }
 
 export interface PariwaraFormData {
-  productName: string;
-  productDetail: string; // merged: description + USP/kelebihan
-  photos: PhotoItem[];
-  selectedMedia: string[];
+  productName:         string;
+  productDetail:       string; // merged: description + USP/kelebihan
+  productUrl:          string; // link marketplace / website / WhatsApp
+  photos:              PhotoItem[];
+  selectedMedia:       string[];
   selectedGenerations: string[];
-  locations: string[];
+  locations:           string[];
 }
 
 // ─── API Response ─────────────────────────────────────────────

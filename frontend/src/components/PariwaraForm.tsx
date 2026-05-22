@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check,
   Smartphone, Globe, BookOpen, Tv, Users,
-  Gamepad2, Flame, Laptop, Briefcase, HeartHandshake,
+  Gamepad2, Flame, Laptop, Briefcase, HeartHandshake, Link,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { PariwaraFormData } from '../types';
@@ -29,6 +29,7 @@ const STEPS = [
 const EMPTY_FORM: PariwaraFormData = {
   productName:         '',
   productDetail:       '',
+  productUrl:          '',
   photos:              [],
   selectedMedia:       [],
   selectedGenerations: [],
@@ -36,11 +37,27 @@ const EMPTY_FORM: PariwaraFormData = {
 };
 
 export default function PariwaraForm({ onSubmit }: Props) {
-  const [step, setStep]     = useState(1);
-  const [form, setForm]     = useState<PariwaraFormData>(EMPTY_FORM);
+  const [step, setStep]           = useState(1);
+  const [form, setForm]           = useState<PariwaraFormData>(EMPTY_FORM);
+  const [linkInput, setLinkInput] = useState('');
+  const [links, setLinks]         = useState<string[]>([]);
   const [chipInput, setChipInput] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // sync links[] → form.productUrl
+  const syncLinks = (next: string[]) => {
+    setLinks(next);
+    setForm(p => ({ ...p, productUrl: next.join(', ') }));
+  };
+
+  const addLink = (val = linkInput.trim()) => {
+    if (val && !links.includes(val)) {
+      syncLinks([...links, val]);
+      setLinkInput('');
+    }
+  };
+  const removeLink = (val: string) => syncLinks(links.filter(x => x !== val));
 
   // ── Validation ───────────────────────────────────────────────
   const isStepValid = (s = step) => {
@@ -51,7 +68,6 @@ export default function PariwaraForm({ onSubmit }: Props) {
     return false;
   };
 
-  // ── Navigation ───────────────────────────────────────────────
   const goNext = () => {
     if (!isStepValid()) return;
     if (step < 4) { setStep(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -92,15 +108,13 @@ export default function PariwaraForm({ onSubmit }: Props) {
   const removeChip = (val: string) =>
     setForm(p => ({ ...p, locations: p.locations.filter(x => x !== val) }));
 
-  // ── Render ───────────────────────────────────────────────────
   return (
     <div className="w-full">
       {/* ── Progress bar ── */}
       <div className="card mb-0 rounded-b-none border-b-0 px-4 pt-4 pb-3"
            style={{ background: 'var(--bg-stone)' }}>
         <div className="flex items-start justify-between mb-3 relative">
-          {/* connector line */}
-          <div className="absolute top-[13px] left-0 right-0 h-0.5 border-theme"
+          <div className="absolute top-[13px] left-0 right-0 h-0.5"
                style={{ background: 'var(--border)', zIndex: 0 }} />
           {STEPS.map(s => {
             const done   = s.id < step;
@@ -108,12 +122,12 @@ export default function PariwaraForm({ onSubmit }: Props) {
             return (
               <div key={s.id} className="flex flex-col items-center gap-1 flex-1 relative z-10">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all ${
-                  done   ? 'text-white border-transparent'     :
+                  done   ? 'text-white border-transparent' :
                   active ? 'text-white shadow-lg border-transparent' :
                            'border-theme bg-card text-muted'
                 }`} style={{
                   background: done ? 'var(--text-muted)' : active ? 'var(--sage)' : undefined,
-                  boxShadow:  active ? `0 0 0 4px var(--sage-light)` : undefined,
+                  boxShadow:  active ? '0 0 0 4px var(--sage-light)' : undefined,
                 }}>
                   {done ? <Check className="w-3.5 h-3.5" /> : s.id}
                 </div>
@@ -132,6 +146,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
       {/* ── Step content ── */}
       <div className="card rounded-t-none px-4 pt-5 pb-5">
         <AnimatePresence mode="wait">
+
           {/* ═══ STEP 1 — Produk ═══ */}
           {step === 1 && (
             <motion.div key="s1"
@@ -160,7 +175,54 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 <p className="text-[10px] text-muted mt-1">Nama brand, nama produk, atau keduanya.</p>
               </div>
 
-              {/* Merged: Deskripsi + USP */}
+              {/* Multi-link chip input */}
+              <div>
+                <label className="field-label">
+                  Link Produk <span className="font-normal text-muted">(Opsional)</span>
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <div className="relative flex-1">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                         style={{ color: 'var(--sage)' }}>
+                      <Link className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      className="text-field w-full"
+                      style={{ paddingLeft: '2rem' }}
+                      type="url"
+                      placeholder="https://shopee.co.id/... atau wa.me/628..."
+                      value={linkInput}
+                      onChange={e => setLinkInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } }}
+                    />
+                  </div>
+                  <button type="button" onClick={() => addLink()}
+                    className="w-11 flex items-center justify-center rounded-xl text-white flex-shrink-0 transition-all hover:opacity-80"
+                    style={{ background: 'var(--text-ink2)' }}>
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Chips */}
+                <div className="flex flex-wrap gap-1.5 p-3 rounded-xl min-h-[48px] items-center border border-theme"
+                     style={{ background: 'var(--bg-stone)' }}>
+                  {links.length === 0 ? (
+                    <span className="text-[11px] text-muted">Belum ada link. Tambahkan minimal 1 atau lewati.</span>
+                  ) : links.map((url, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-theme max-w-full"
+                          style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
+                      <Link className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--sage)' }} />
+                      <span className="truncate max-w-[180px]">{url}</span>
+                      <button type="button" onClick={() => removeLink(url)}
+                        className="text-muted hover:text-ink transition-colors flex-shrink-0">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Deskripsi + USP */}
               <div>
                 <label className="field-label">
                   Deskripsi & Kelebihan Produk <span className="font-normal text-muted">(Opsional tapi direkomendasikan)</span>
@@ -168,19 +230,10 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 <textarea
                   className="text-field"
                   rows={5}
-                  placeholder={`Ceritakan:
-• Produk ini apa dan terbuat dari apa?
-• Apa yang bikin produkmu beda / unggul?
-• Sertifikasi yang dimiliki (Halal, BPOM, dll)?
-
-Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah Padang tradisional, tanpa pengawet, sudah bersertifikat halal MUI, tahan 3 bulan di freezer..."`}
+                  placeholder={`Ceritakan:\n• Produk ini apa dan terbuat dari apa?\n• Apa yang bikin produkmu beda / unggul?\n• Harga kisaran berapa?\n• Siapa yang paling cocok beli produk ini?`}
                   value={form.productDetail}
                   onChange={e => setForm(p => ({ ...p, productDetail: e.target.value }))}
-                  style={{ resize: 'vertical', minHeight: '120px' }}
                 />
-                <p className="text-[10px] text-muted mt-1">
-                  Info di sini jadi bahan utama contoh copywriting dan strategi iklan yang dibuat AI.
-                </p>
               </div>
 
               {/* Photo upload */}
@@ -189,37 +242,28 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
                   Foto Produk <span className="font-normal text-muted">(Opsional)</span>
                 </label>
                 <div
-                  onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
-                  onDragOver={e  => { e.preventDefault(); setDragActive(true); }}
-                  onDragLeave={() => setDragActive(false)}
-                  onDrop={e => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files[0]) handleFiles(e.dataTransfer.files); }}
+                  className="border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors"
+                  style={{ borderColor: dragActive ? 'var(--sage)' : 'var(--border)', background: dragActive ? 'var(--sage-light)' : undefined }}
                   onClick={() => fileRef.current?.click()}
-                  className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-5 cursor-pointer transition-all ${dragActive ? 'border-sage-500' : 'border-theme hover:border-stone-400'}`}
-                  style={{
-                    background:   dragActive ? 'var(--sage-light)' : 'var(--bg-stone)',
-                    borderColor:  dragActive ? 'var(--sage)' : undefined,
-                  }}
+                  onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                  onDragLeave={() => setDragActive(false)}
+                  onDrop={e => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); }}
                 >
-                  <input ref={fileRef} type="file" multiple accept="image/*" className="hidden"
-                    onChange={e => e.target.files && handleFiles(e.target.files)} />
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2"
-                       style={{ background: 'var(--bg-card)', color: 'var(--sage)' }}>
-                    <Upload className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs font-bold text-ink2 text-center">Seret foto ke sini atau klik untuk pilih</span>
-                  <span className="text-[10px] text-muted mt-1">JPG, PNG, WEBP · Bisa lebih dari satu</span>
+                  <Upload className="w-5 h-5 mx-auto mb-1.5" style={{ color: 'var(--sage)' }} />
+                  <p className="text-[11px] font-semibold text-ink2">Klik atau drag foto produk di sini</p>
+                  <p className="text-[10px] text-muted mt-0.5">JPG, PNG, WEBP (maks. 5 foto)</p>
+                  <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
+                    onChange={e => { if (e.target.files) handleFiles(e.target.files); }} />
                 </div>
-
                 {form.photos.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mt-3">
-                    {form.photos.map(p => (
-                      <div key={p.id} className="relative aspect-square rounded-xl overflow-hidden border border-theme">
-                        <img src={p.url} alt="" className="w-full h-full object-cover" />
-                        <button
-                          onClick={e => removePhoto(p.id, e)}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                        >
-                          <X className="w-2.5 h-2.5" />
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {form.photos.map(ph => (
+                      <div key={ph.id} className="relative w-16 h-16 rounded-xl overflow-hidden border border-theme flex-shrink-0">
+                        <img src={ph.url} alt={ph.name} className="w-full h-full object-cover" />
+                        <button type="button" onClick={e => removePhoto(ph.id, e)}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white"
+                          style={{ background: 'rgba(0,0,0,0.55)' }}>
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
@@ -234,14 +278,12 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
             <motion.div key="s2"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.18 }} className="space-y-4">
-
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Di mana iklanmu akan tayang?</h3>
+                <h3 className="text-base font-display font-bold text-ink">Mau iklan di mana?</h3>
                 <p className="text-[11px] text-muted mt-1 leading-relaxed">
-                  Pilih platform atau media yang ingin kamu gunakan. Pilih minimal 1, boleh lebih.
+                  Pilih saluran media yang akan kamu gunakan. Bisa lebih dari satu.
                 </p>
               </div>
-
               <div className="space-y-2">
                 {MEDIA_CATEGORIES.map(m => {
                   const Icon = mediaIcons[m.icon] || Globe;
@@ -257,8 +299,7 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
                         <div className="text-xs font-bold text-ink">{m.name}</div>
                         <div className="text-[10px] text-muted mt-0.5 leading-snug">{m.description}</div>
                       </div>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${
-                        sel ? 'text-white' : 'border-theme bg-card'}`}
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
                            style={{ background: sel ? 'var(--sage)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
                         {sel && <Check className="w-2.5 h-2.5" />}
                       </div>
@@ -274,14 +315,12 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
             <motion.div key="s3"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.18 }} className="space-y-4">
-
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Siapa target pembelimu?</h3>
                 <p className="text-[11px] text-muted mt-1 leading-relaxed">
                   Pilih kelompok usia yang paling mungkin membeli produkmu. Bisa lebih dari satu.
                 </p>
               </div>
-
               <div className="space-y-2">
                 {TARGET_GENERATIONS.map(g => {
                   const Icon = genIcons[g.icon] || Flame;
@@ -303,8 +342,7 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
                         </div>
                         <p className="text-[10px] text-muted leading-snug">{g.description}</p>
                       </div>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${
-                        sel ? 'text-white' : 'border-theme bg-card'}`}
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
                            style={{ background: sel ? 'var(--sage)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
                         {sel && <Check className="w-2.5 h-2.5" />}
                       </div>
@@ -320,14 +358,12 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
             <motion.div key="s4"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.18 }} className="space-y-4">
-
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Jualan di mana?</h3>
                 <p className="text-[11px] text-muted mt-1 leading-relaxed">
                   Tambahkan kota, provinsi, atau marketplace. Strategi akan disesuaikan dengan area pilihanmu.
                 </p>
               </div>
-
               <div>
                 <label className="field-label">
                   Lokasi / Marketplace <span style={{ color: 'var(--amber)' }}>*</span>
@@ -347,8 +383,6 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
                     <Plus className="w-5 h-5" />
                   </button>
                 </div>
-
-                {/* Chips */}
                 <div className="flex flex-wrap gap-1.5 p-3 rounded-xl min-h-[48px] items-center mb-3 border border-theme"
                      style={{ background: 'var(--bg-stone)' }}>
                   {form.locations.length === 0 ? (
@@ -357,18 +391,13 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
                     <span key={i} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-theme"
                           style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
                       {loc}
-                      <button type="button" onClick={() => removeChip(loc)}
-                        className="text-muted hover:text-ink transition-colors">
+                      <button type="button" onClick={() => removeChip(loc)} className="text-muted hover:text-ink transition-colors">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
                   ))}
                 </div>
-
-                {/* Quick add presets */}
-                <p className="text-[9px] font-code font-bold text-muted uppercase tracking-wider mb-1.5">
-                  Pilihan Cepat:
-                </p>
+                <p className="text-[9px] font-code font-bold text-muted uppercase tracking-wider mb-1.5">Pilihan Cepat:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {LOCATION_PRESETS.map(p => {
                     const added = form.locations.includes(p);
@@ -376,11 +405,7 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
                       <button key={p} type="button" disabled={added} onClick={() => addChip(p)}
                         className={`text-[10px] font-semibold px-2.5 py-1.5 rounded-full border transition-all ${
                           added ? 'opacity-35 cursor-not-allowed' : 'hover:border-sage cursor-pointer'}`}
-                        style={{
-                          background:   'var(--bg-card)',
-                          borderColor:  'var(--border)',
-                          color:        added ? 'var(--text-muted)' : 'var(--text-ink2)',
-                        }}>
+                        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: added ? 'var(--text-muted)' : 'var(--text-ink2)' }}>
                         {added ? `✓ ${p}` : `+ ${p}`}
                       </button>
                     );
@@ -393,16 +418,12 @@ Contoh: "Sambal paru homemade dari paru sapi segar, dimasak dengan bumbu rempah 
 
         {/* ── Footer navigation ── */}
         <div className="flex items-center gap-3 mt-6 pt-4 border-t border-theme">
-          <button
-            type="button" onClick={goBack}
+          <button type="button" onClick={goBack}
             className={`btn-secondary flex-none px-4 gap-1.5 ${step === 1 ? 'invisible pointer-events-none' : ''}`}
             style={{ width: 'auto' }}>
             <ChevronLeft className="w-4 h-4" /> Kembali
           </button>
-
-          <button
-            type="button" onClick={goNext} disabled={!isStepValid()}
-            className="btn-primary flex-1 gap-1.5">
+          <button type="button" onClick={goNext} disabled={!isStepValid()} className="btn-primary flex-1 gap-1.5">
             {step === 4 ? (
               <><Sparkles className="w-4 h-4" /> Analisa Sekarang</>
             ) : (

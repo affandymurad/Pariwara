@@ -18,6 +18,7 @@ export function useAnalyze() {
         body: JSON.stringify({
           productName:         formData.productName,
           productDetail:       formData.productDetail,
+          productUrl:          formData.productUrl,
           selectedMedia:       formData.selectedMedia,
           selectedGenerations: formData.selectedGenerations,
           locations:           formData.locations,

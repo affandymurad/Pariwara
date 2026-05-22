@@ -5,6 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 interface AnalyzeBody {
   productName:          string;
   productDetail?:       string;
+  productUrl?:          string;
   selectedMedia?:       string[];
   selectedGenerations?: string[];
   locations?:           string[];
@@ -56,6 +57,7 @@ export default async function handler(req: Request, _ctx: Context) {
   const {
     productName,
     productDetail,
+    productUrl          = "",
     selectedMedia       = [],
     selectedGenerations = [],
     locations           = [],
@@ -69,6 +71,9 @@ export default async function handler(req: Request, _ctx: Context) {
   const mediaTxt = selectedMedia.map(id => `  - ${MEDIA_LABELS[id] ?? id}`).join("\n") || "  - (tidak dipilih)";
   const genTxt   = selectedGenerations.map(id => `  - ${GEN_LABELS[id] ?? id}`).join("\n") || "  - (tidak dipilih)";
   const locTxt   = locations.join(", ") || "(tidak ditentukan)";
+  const urlLine  = productUrl?.trim()
+    ? `- Link Produk (marketplace/website/WA): ${productUrl.trim()}\n  Analisis link ini: identifikasi platform penjualan, format CTA yang sesuai, dan optimalkan strategi berdasarkan saluran tersebut.`
+    : "- Link Produk: (tidak diisi)";
 
   const prompt = `Kamu adalah konsultan periklanan senior spesialis Ekonomi Kreatif Indonesia (Ekraf).
 Tugasmu: buat rekomendasi strategi iklan yang sangat spesifik, actionable, dan berbasis data.
@@ -77,6 +82,7 @@ Tugasmu: buat rekomendasi strategi iklan yang sangat spesifik, actionable, dan b
 PROFIL PRODUK:
 - Nama Produk/Brand: ${productName}
 - Deskripsi & Keunggulan: ${productDetail?.trim() || "(tidak diisi)"}
+${urlLine}
 
 PARAMETER KAMPANYE:
 - Saluran Media:
@@ -93,7 +99,7 @@ Balas HANYA JSON valid, tanpa markdown backtick, tanpa teks lain di luar JSON.
   "recommendedPlatforms": [
     {
       "name": "string (maks 50 karakter)",
-      "description": "string (1-2 kalimat, apa & kenapa cocok)",
+      "description": "string (1-2 kalimat, apa & kenapa cocok — jika ada link produk, sebutkan relevansinya dengan platform tersebut)",
       "reasoning": "string (alasan strategis berdasarkan demografi & media, 1 kalimat)",
       "icon": "string (salah satu: Flame|Laptop|Globe|Users|BookOpen|Tv|Smartphone)"
     }
@@ -101,19 +107,19 @@ Balas HANYA JSON valid, tanpa markdown backtick, tanpa teks lain di luar JSON.
   "copywritingStyles": [
     {
       "title": "string (nama gaya & target, maks 60 karakter)",
-      "example": "string (contoh teks iklan NYATA untuk ${productName}, pakai emoji, langsung bisa dipakai)",
+      "example": "string (contoh teks iklan NYATA untuk ${productName}, pakai emoji, langsung bisa dipakai — jika ada link produk, sertakan CTA yang mengarahkan ke link tersebut)",
       "tips": "string (1-2 tip praktis)"
     }
   ],
   "marketplaceStrategies": [
     {
       "title": "string (judul strategi, maks 60 karakter)",
-      "details": "string (penjelasan strategi yang spesifik untuk saluran terkait dari daftar: ${locTxt} — bisa marketplace, platform sosmed, kota, atau saluran lain, 2-3 kalimat)",
+      "details": "string (penjelasan strategi yang spesifik untuk saluran terkait dari daftar: ${locTxt} — jika ada link produk, sebutkan cara mengoptimalkan listing/profil di saluran tersebut, 2-3 kalimat)",
       "actionItems": ["string (aksi konkret 1)", "string (aksi konkret 2)", "string (aksi konkret 3)"]
     }
   ],
   "quickWins": [
-    "string (aksi konkret yang bisa dilakukan hari ini atau minggu ini)"
+    "string (aksi konkret yang bisa dilakukan hari ini atau minggu ini — jika ada link produk, salah satu quick win harus terkait optimasi link tersebut)"
   ]
 }
 

@@ -8,6 +8,7 @@ import type { PariwaraFormData, AIRecommendation } from '../types';
 import { MEDIA_CATEGORIES, TARGET_GENERATIONS } from '../data/statistics';
 import { useAnalyze } from '../hooks/useAnalyze';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface Props {
   formData: PariwaraFormData;
@@ -46,97 +47,103 @@ export default function AnalysisResult({ formData, onReset }: Props) {
   }, []);
 
   // ── PDF export ────────────────────────────────────────────────
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (!rec) return;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const sage      = [107, 143, 113] as [number, number, number];
-    const ink       = [30,  27,  24 ] as [number, number, number];
-    const muted     = [122, 112, 101] as [number, number, number];
-    const W = doc.internal.pageSize.getWidth();
-    const M = 15;
-    const CW = W - M * 2;
-    let y = 20;
 
-    const stripe = () => { doc.setFillColor(...sage); doc.rect(0, 0, W, 4, 'F'); };
-    const footer = (n: number, t: number) => {
-      doc.setFont('Helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-      doc.line(M, 285, W - M, 285);
-      doc.text('Pariwara oleh Affandy Murad', M, 290);
-      doc.text(`${n} / ${t}`, W - M, 290, { align: 'right' });
-    };
+    const source = document.getElementById('pariwara-pdf-content');
+    if (!source) return;
 
-    stripe();
-    doc.setFont('Helvetica', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(...sage);
-    doc.text('PARIWARA — ANALISIS STRATEGI IKLAN EKRAF', M, y); y += 10;
+    const actionBar = document.getElementById('pariwara-action-bar');
+    const previousActionBarDisplay = actionBar?.style.display;
 
-    doc.setFontSize(18); doc.setTextColor(...ink);
-    const title = doc.splitTextToSize(`Rekomendasi Kampanye untuk "${rec?.recommendedPlatforms?.[0] ? formData.productName : formData.productName}"`, CW);
-    doc.text(title, M, y); y += title.length * 7 + 6;
+    try {
+      if (actionBar) actionBar.style.display = 'none';
 
-    doc.setFont('Helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...muted);
-    doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}`, M, y);
-    y += 8;
-    doc.setDrawColor(232, 228, 217); doc.line(M, y, W - M, y); y += 10;
+      await document.fonts?.ready;
 
-    // Platforms
-    doc.setFont('Helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...sage);
-    doc.text('I. Rekomendasi Platform Pemasaran', M, y); y += 8;
-    rec.recommendedPlatforms.forEach(p => {
-      doc.setFillColor(250, 248, 245); doc.rect(M, y, CW, 22, 'F');
-      doc.setFillColor(...sage); doc.rect(M, y, 2, 22, 'F');
-      doc.setFont('Helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ink);
-      doc.text(p.name, M + 5, y + 6);
-      doc.setFont('Helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...muted);
-      doc.text(doc.splitTextToSize(p.description, CW - 12), M + 5, y + 12);
-      doc.setFont('Helvetica', 'oblique'); doc.setFontSize(8);
-      doc.text(doc.splitTextToSize(`Alasan: ${p.reasoning}`, CW - 12), M + 5, y + 17);
-      y += 26;
-    });
-
-    doc.addPage(); stripe(); y = 20;
-
-    // Copywriting
-    doc.setFont('Helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...sage);
-    doc.text('II. Formula Copywriting', M, y); y += 8;
-    rec.copywritingStyles.forEach(c => {
-      doc.setFont('Helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ink);
-      doc.text(c.title, M, y); y += 5;
-      doc.setFillColor(253, 252, 249); doc.rect(M, y, CW, 18, 'F');
-      doc.setFont('Helvetica', 'italic'); doc.setFontSize(8.5); doc.setTextColor(...ink);
-      doc.text(doc.splitTextToSize(c.example, CW - 8), M + 4, y + 5); y += 22;
-      doc.setFont('Helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-      doc.text(doc.splitTextToSize(`Tips: ${c.tips}`, CW), M, y); y += 10;
-    });
-
-    // Strategies
-    doc.setFont('Helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...sage);
-    doc.text('III. Strategi Marketplace', M, y); y += 8;
-    rec.marketplaceStrategies.forEach(s => {
-      doc.setFont('Helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ink);
-      doc.text(s.title, M, y); y += 5;
-      doc.setFont('Helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...muted);
-      doc.text(doc.splitTextToSize(s.details, CW), M, y); y += (s.details.length / 80 + 1) * 5;
-      s.actionItems.forEach(a => {
-        doc.setFillColor(...sage); doc.circle(M + 2, y + 1.5, 1, 'F');
-        doc.text(doc.splitTextToSize(a, CW - 6), M + 6, y + 3); y += 6;
+      const canvas = await html2canvas(source, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: source.scrollWidth,
+        windowHeight: source.scrollHeight,
       });
-      y += 4;
-    });
 
-    // Quick wins
-    if (rec.quickWins?.length) {
-      doc.setFont('Helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...sage);
-      doc.text('IV. Quick Wins — Mulai Hari Ini!', M, y); y += 8;
-      rec.quickWins.forEach((w, i) => {
-        doc.setFont('Helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...ink);
-        doc.text(`${i + 1}. ${w}`, M, y, { maxWidth: CW }); y += 7;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
       });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const margin = 10;
+      const usableWidth = pageWidth - margin * 2;
+      const usableHeight = pageHeight - margin * 2;
+
+      const imgWidth = usableWidth;
+      const pxPerMm = canvas.width / imgWidth;
+      const pageCanvasHeightPx = Math.floor(usableHeight * pxPerMm);
+
+      let renderedHeightPx = 0;
+      let pageIndex = 0;
+
+      while (renderedHeightPx < canvas.height) {
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+
+        const sliceHeightPx = Math.min(
+          pageCanvasHeightPx,
+          canvas.height - renderedHeightPx,
+        );
+
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeightPx;
+
+        pageCtx?.drawImage(
+          canvas,
+          0,
+          renderedHeightPx,
+          canvas.width,
+          sliceHeightPx,
+          0,
+          0,
+          canvas.width,
+          sliceHeightPx,
+        );
+
+        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+        const pageImgHeight = sliceHeightPx / pxPerMm;
+
+        if (pageIndex > 0) pdf.addPage();
+
+        pdf.addImage(
+          pageImgData,
+          'JPEG',
+          margin,
+          margin,
+          imgWidth,
+          pageImgHeight,
+        );
+
+        renderedHeightPx += sliceHeightPx;
+        pageIndex += 1;
+      }
+
+      const safeName = formData.productName
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '_')
+        .trim();
+
+      pdf.save(`Laporan_Pariwara_${safeName || 'Analisis'}.pdf`);
+    } finally {
+      if (actionBar) actionBar.style.display = previousActionBarDisplay ?? '';
     }
-
-    const total = doc.internal.pages.length - 1;
-    for (let i = 1; i <= total; i++) { doc.setPage(i); footer(i, total); }
-    doc.save(`Laporan_Pariwara_${formData.productName.replace(/\s+/g, '_')}.pdf`);
   };
 
   // ── Loading state ─────────────────────────────────────────────
@@ -145,23 +152,48 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       <div className="card p-8 flex flex-col items-center">
         <div className="relative w-14 h-14 mb-5">
           <div className="absolute inset-0 rounded-full border-4" style={{ borderColor: 'var(--bg-stone)' }} />
-          <div className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
-               style={{ borderTopColor: 'var(--sage)' }} />
+          <div
+            className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
+            style={{ borderTopColor: 'var(--sage)' }}
+          />
           <div className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--sage)' }}>
             <MessageSquare className="w-5 h-5" />
           </div>
         </div>
-        <h3 className="text-base font-display font-bold text-ink text-center">Merumuskan Strategi Pariwara...</h3>
+
+        <h3 className="text-base font-display font-bold text-ink text-center">
+          Merumuskan Strategi Pariwara...
+        </h3>
+
         <p className="text-[10px] font-code text-muted mt-1 uppercase tracking-wider text-center">
           Claude Sonnet 4.6 sedang bekerja
         </p>
+
         <div className="w-full rounded-xl p-4 mt-5 space-y-2" style={{ background: 'var(--bg-stone)' }}>
           {LOGS.map((log, i) => (
-            <div key={i} className={`flex items-center gap-2.5 transition-opacity ${i <= logIdx ? 'opacity-100' : 'opacity-20'}`}>
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                i === logIdx && loading ? 'animate-pulse' : ''}`}
-                   style={{ background: i < logIdx ? 'var(--text-muted)' : i === logIdx ? 'var(--sage)' : 'var(--border)' }} />
-              <span className="text-[10px] font-code" style={{ color: i <= logIdx ? 'var(--text-ink2)' : 'var(--text-muted)' }}>
+            <div
+              key={i}
+              className={`flex items-center gap-2.5 transition-opacity ${i <= logIdx ? 'opacity-100' : 'opacity-20'}`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  i === logIdx && loading ? 'animate-pulse' : ''
+                }`}
+                style={{
+                  background:
+                    i < logIdx
+                      ? 'var(--text-muted)'
+                      : i === logIdx
+                        ? 'var(--sage)'
+                        : 'var(--border)',
+                }}
+              />
+              <span
+                className="text-[10px] font-code"
+                style={{
+                  color: i <= logIdx ? 'var(--text-ink2)' : 'var(--text-muted)',
+                }}
+              >
                 {log}
               </span>
             </div>
@@ -175,14 +207,18 @@ export default function AnalysisResult({ formData, onReset }: Props) {
   if (error) {
     return (
       <div className="card p-6 flex flex-col items-center gap-4">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center"
-             style={{ background: '#FDF2F2', color: '#DC2626' }}>
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center"
+          style={{ background: '#FDF2F2', color: '#DC2626' }}
+        >
           <AlertTriangle className="w-6 h-6" />
         </div>
+
         <div className="text-center">
           <h3 className="font-display font-bold text-ink text-base">Analisis Gagal</h3>
           <p className="text-xs text-muted mt-1">{error}</p>
         </div>
+
         <button onClick={onReset} className="btn-secondary w-auto px-6">
           <RefreshCw className="w-4 h-4" /> Coba Lagi
         </button>
@@ -191,19 +227,34 @@ export default function AnalysisResult({ formData, onReset }: Props) {
   }
 
   // ── Success state ─────────────────────────────────────────────
-  const mediaNames = formData.selectedMedia.map(id => MEDIA_CATEGORIES.find(m => m.id === id)?.name ?? id);
-  const genNames   = formData.selectedGenerations.map(id => TARGET_GENERATIONS.find(g => g.id === id)?.name ?? id);
+  const mediaNames = formData.selectedMedia.map(
+    id => MEDIA_CATEGORIES.find(m => m.id === id)?.name ?? id,
+  );
+
+  const genNames = formData.selectedGenerations.map(
+    id => TARGET_GENERATIONS.find(g => g.id === id)?.name ?? id,
+  );
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+    <motion.div
+      id="pariwara-pdf-content"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-4 bg-white p-4"
+    >
       {/* Hero */}
-      <div className="rounded-2xl p-4 flex items-center gap-3.5 text-white"
-           style={{ background: 'var(--sage)' }}>
+      <div
+        className="rounded-2xl p-4 flex items-center gap-3.5 text-white"
+        style={{ background: 'var(--sage)' }}
+      >
         <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
           <CheckCircle2 className="w-6 h-6" />
         </div>
+
         <div>
-          <p className="text-[9px] font-code uppercase tracking-widest opacity-75 mb-0.5">Analisis Selesai</p>
+          <p className="text-[9px] font-code uppercase tracking-widest opacity-75 mb-0.5">
+            Analisis Selesai
+          </p>
           <h3 className="text-sm font-display font-bold leading-snug">
             Strategi Iklan untuk "{formData.productName}" Siap! 🎉
           </h3>
@@ -212,23 +263,44 @@ export default function AnalysisResult({ formData, onReset }: Props) {
 
       {/* Params summary */}
       <div className="card p-4">
-        <p className="text-[9px] font-code font-bold text-muted uppercase tracking-wider mb-2">Parameter Analisis:</p>
+        <p className="text-[9px] font-code font-bold text-muted uppercase tracking-wider mb-2">
+          Parameter Analisis:
+        </p>
+
         <div className="flex flex-wrap gap-1.5">
-          <span className="param-tag" style={{ background: 'var(--sage-light)', color: 'var(--sage-dark)' }}>
+          <span
+            className="param-tag"
+            style={{ background: 'var(--sage-light)', color: 'var(--sage-dark)' }}
+          >
             🛍️ {formData.productName}
           </span>
+
           {mediaNames.map((m, i) => (
-            <span key={i} className="param-tag" style={{ background: 'var(--bg-stone)', color: 'var(--text-ink2)' }}>
+            <span
+              key={i}
+              className="param-tag"
+              style={{ background: 'var(--bg-stone)', color: 'var(--text-ink2)' }}
+            >
               📺 {m}
             </span>
           ))}
+
           {genNames.map((g, i) => (
-            <span key={i} className="param-tag" style={{ background: 'var(--bg-stone)', color: 'var(--text-ink2)' }}>
+            <span
+              key={i}
+              className="param-tag"
+              style={{ background: 'var(--bg-stone)', color: 'var(--text-ink2)' }}
+            >
               👥 {g}
             </span>
           ))}
+
           {formData.locations.map((l, i) => (
-            <span key={i} className="param-tag" style={{ background: 'var(--amber-light)', color: 'var(--amber)' }}>
+            <span
+              key={i}
+              className="param-tag"
+              style={{ background: 'var(--amber-light)', color: 'var(--amber)' }}
+            >
               📍 {l}
             </span>
           ))}
@@ -238,21 +310,36 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       {/* Module I — Platforms */}
       <div className="card p-4">
         <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-theme">
-          <div className="module-icon module-icon-sage"><BarChart2 className="w-4 h-4" /></div>
+          <div className="module-icon module-icon-sage">
+            <BarChart2 className="w-4 h-4" />
+          </div>
+
           <h4 className="text-[10px] font-code font-bold text-ink2 uppercase tracking-wider">
             I. Platform & Saluran Iklan Terbaik
           </h4>
         </div>
+
         <div className="space-y-3">
           {rec?.recommendedPlatforms?.map((p, i) => (
             <div key={i} className="rounded-xl p-3" style={{ background: 'var(--bg-stone)' }}>
               <h5 className="text-xs font-display font-bold text-ink flex items-center gap-2 mb-1">
-                <span className="w-5 h-5 rounded-md text-white text-[10px] font-code font-bold flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'var(--sage)' }}>{i + 1}</span>
+                <span
+                  className="w-5 h-5 rounded-md text-white text-[10px] font-code font-bold flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'var(--sage)' }}
+                >
+                  {i + 1}
+                </span>
                 {p.name}
               </h5>
-              <p className="text-[11px] text-ink2 leading-relaxed">{p.description}</p>
-              <p className="text-[10px] italic mt-2 pt-2 border-t border-theme" style={{ color: 'var(--sage)' }}>
+
+              <p className="text-[11px] text-ink2 leading-relaxed">
+                {p.description}
+              </p>
+
+              <p
+                className="text-[10px] italic mt-2 pt-2 border-t border-theme"
+                style={{ color: 'var(--sage)' }}
+              >
                 🎯 {p.reasoning}
               </p>
             </div>
@@ -263,20 +350,35 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       {/* Module II — Copywriting */}
       <div className="card p-4">
         <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-theme">
-          <div className="module-icon module-icon-amber"><MessageSquare className="w-4 h-4" /></div>
+          <div className="module-icon module-icon-amber">
+            <MessageSquare className="w-4 h-4" />
+          </div>
+
           <h4 className="text-[10px] font-code font-bold text-ink2 uppercase tracking-wider">
             II. Contoh Copywriting Iklan
           </h4>
         </div>
+
         <div className="space-y-4">
           {rec?.copywritingStyles?.map((c, i) => (
             <div key={i}>
-              <p className="text-[10px] font-code font-bold uppercase tracking-wide mb-2"
-                 style={{ color: 'var(--amber)' }}>⚡ {c.title}</p>
-              <div className="rounded-xl p-3 text-xs text-ink2 italic leading-relaxed border-l-4"
-                   style={{ background: 'var(--bg-stone)', borderLeftColor: 'var(--amber)' }}>
+              <p
+                className="text-[10px] font-code font-bold uppercase tracking-wide mb-2"
+                style={{ color: 'var(--amber)' }}
+              >
+                ⚡ {c.title}
+              </p>
+
+              <div
+                className="rounded-xl p-3 text-xs text-ink2 italic leading-relaxed border-l-4 whitespace-pre-line"
+                style={{
+                  background: 'var(--bg-stone)',
+                  borderLeftColor: 'var(--amber)',
+                }}
+              >
                 {c.example}
               </div>
+
               <p className="text-[10px] text-muted mt-2 leading-relaxed">
                 💡 <strong>Tips:</strong> {c.tips}
               </p>
@@ -288,22 +390,39 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       {/* Module III — Marketplace */}
       <div className="card p-4">
         <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-theme">
-          <div className="module-icon" style={{ background: 'var(--bg-stone)', color: 'var(--text-muted)' }}>
+          <div
+            className="module-icon"
+            style={{ background: 'var(--bg-stone)', color: 'var(--text-muted)' }}
+          >
             <Store className="w-4 h-4" />
           </div>
+
           <h4 className="text-[10px] font-code font-bold text-ink2 uppercase tracking-wider">
             III. Strategi Kelola Marketplace
           </h4>
         </div>
+
         <div className="space-y-4">
           {rec?.marketplaceStrategies?.map((s, i) => (
             <div key={i}>
-              <h5 className="text-xs font-display font-bold text-ink mb-1">📌 {s.title}</h5>
-              <p className="text-[11px] text-muted leading-relaxed mb-2">{s.details}</p>
+              <h5 className="text-xs font-display font-bold text-ink mb-1">
+                📌 {s.title}
+              </h5>
+
+              <p className="text-[11px] text-muted leading-relaxed mb-2">
+                {s.details}
+              </p>
+
               <ul className="space-y-1.5">
                 {s.actionItems.map((a, j) => (
-                  <li key={j} className="flex items-start gap-2 text-[10px] text-ink2 font-medium">
-                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ background: 'var(--sage)' }} />
+                  <li
+                    key={j}
+                    className="flex items-start gap-2 text-[10px] text-ink2 font-medium"
+                  >
+                    <div
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5"
+                      style={{ background: 'var(--sage)' }}
+                    />
                     {a}
                   </li>
                 ))}
@@ -314,23 +433,44 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       </div>
 
       {/* Module IV — Quick Wins */}
-      {rec?.quickWins?.length > 0 && (
-        <div className="card p-4" style={{ background: 'var(--sage-light)', borderColor: 'var(--sage)' }}>
+      {(rec?.quickWins?.length ?? 0) > 0 && (
+        <div
+          className="card p-4"
+          style={{ background: 'var(--sage-light)', borderColor: 'var(--sage)' }}
+        >
           <div className="flex items-center gap-2.5 mb-3">
-            <div className="module-icon" style={{ background: 'var(--sage)', color: 'white' }}>
+            <div
+              className="module-icon"
+              style={{ background: 'var(--sage)', color: 'white' }}
+            >
               <Zap className="w-4 h-4" />
             </div>
-            <h4 className="text-[10px] font-code font-bold uppercase tracking-wider" style={{ color: 'var(--sage-dark)' }}>
+
+            <h4
+              className="text-[10px] font-code font-bold uppercase tracking-wider"
+              style={{ color: 'var(--sage-dark)' }}
+            >
               IV. Quick Wins — Mulai Hari Ini!
             </h4>
           </div>
+
           <div className="space-y-2">
-            {rec.quickWins.map((w, i) => (
-              <div key={i} className="flex items-start gap-2.5 rounded-xl p-2.5"
-                   style={{ background: 'var(--bg-card)' }}>
-                <span className="w-5 h-5 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-                      style={{ background: 'var(--sage)' }}>{i + 1}</span>
-                <p className="text-[11px] text-ink2 leading-relaxed">{w}</p>
+            {(rec?.quickWins ?? []).map((w, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-2.5 rounded-xl p-2.5"
+                style={{ background: 'var(--bg-card)' }}
+              >
+                <span
+                  className="w-5 h-5 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                  style={{ background: 'var(--sage)' }}
+                >
+                  {i + 1}
+                </span>
+
+                <p className="text-[11px] text-ink2 leading-relaxed">
+                  {w}
+                </p>
               </div>
             ))}
           </div>
@@ -338,14 +478,22 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       )}
 
       {/* Action bar */}
-      <div className="card p-3.5 flex flex-col gap-2.5 sticky bottom-4"
-           style={{ backdropFilter: 'blur(12px)', background: 'color-mix(in srgb, var(--bg-card) 92%, transparent)' }}>
+      <div
+        id="pariwara-action-bar"
+        className="card p-3.5 flex flex-col gap-2.5 sticky bottom-4"
+        style={{
+          backdropFilter: 'blur(12px)',
+          background: 'color-mix(in srgb, var(--bg-card) 92%, transparent)',
+        }}
+      >
         <button onClick={exportPDF} className="btn-primary h-14 text-sm gap-2">
           <Download className="w-5 h-5" /> Download Laporan PDF
         </button>
+
         <button onClick={onReset} className="btn-secondary gap-2">
           <RefreshCw className="w-4 h-4" /> Buat Analisis Baru
         </button>
+
         <p className="text-center text-[9px] font-code text-muted uppercase tracking-widest">
           Pariwara oleh Affandy Murad
         </p>
