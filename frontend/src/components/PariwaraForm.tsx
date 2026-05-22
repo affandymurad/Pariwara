@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import {
-  Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check, Link,
+  Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check,
   Smartphone, Globe, BookOpen, Tv, Users,
-  Gamepad2, Flame, Laptop, Briefcase, HeartHandshake,
+  Gamepad2, Flame, Laptop, Briefcase, HeartHandshake, Link,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { PariwaraFormData } from '../types';
@@ -37,13 +37,29 @@ const EMPTY_FORM: PariwaraFormData = {
 };
 
 export default function PariwaraForm({ onSubmit }: Props) {
-  const [step,       setStep      ] = useState(1);
-  const [form,       setForm      ] = useState<PariwaraFormData>(EMPTY_FORM);
-  const [chipInput,  setChipInput ] = useState('');
-  const [linkInput,  setLinkInput ] = useState('');
+  const [step, setStep]           = useState(1);
+  const [form, setForm]           = useState<PariwaraFormData>(EMPTY_FORM);
+  const [linkInput, setLinkInput] = useState('');
+  const [links, setLinks]         = useState<string[]>([]);
+  const [chipInput, setChipInput] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // sync links[] → form.productUrl
+  const syncLinks = (next: string[]) => {
+    setLinks(next);
+    setForm(p => ({ ...p, productUrl: next.join(', ') }));
+  };
+
+  const addLink = (val = linkInput.trim()) => {
+    if (val && !links.includes(val)) {
+      syncLinks([...links, val]);
+      setLinkInput('');
+    }
+  };
+  const removeLink = (val: string) => syncLinks(links.filter(x => x !== val));
+
+  // ── Validation ───────────────────────────────────────────────
   const isStepValid = (s = step) => {
     if (s === 1) return form.productName.trim().length > 0;
     if (s === 2) return form.selectedMedia.length > 0;
@@ -61,9 +77,12 @@ export default function PariwaraForm({ onSubmit }: Props) {
     if (step > 1) { setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   };
 
+  // ── Photo handlers ───────────────────────────────────────────
   const handleFiles = (files: FileList) => {
     const newPhotos = Array.from(files).map(f => ({
-      id: Math.random().toString(36).substr(2, 8), url: URL.createObjectURL(f), name: f.name,
+      id:   Math.random().toString(36).substr(2, 8),
+      url:  URL.createObjectURL(f),
+      name: f.name,
     }));
     setForm(p => ({ ...p, photos: [...p.photos, ...newPhotos] }));
   };
@@ -72,12 +91,14 @@ export default function PariwaraForm({ onSubmit }: Props) {
     setForm(p => ({ ...p, photos: p.photos.filter(x => x.id !== id) }));
   };
 
+  // ── Toggle helpers ───────────────────────────────────────────
   const toggle = (key: 'selectedMedia' | 'selectedGenerations', id: string) =>
     setForm(p => {
       const list = p[key];
       return { ...p, [key]: list.includes(id) ? list.filter(x => x !== id) : [...list, id] };
     });
 
+  // ── Chip helpers ─────────────────────────────────────────────
   const addChip = (val = chipInput.trim()) => {
     if (val && !form.locations.includes(val)) {
       setForm(p => ({ ...p, locations: [...p.locations, val] }));
@@ -87,18 +108,9 @@ export default function PariwaraForm({ onSubmit }: Props) {
   const removeChip = (val: string) =>
     setForm(p => ({ ...p, locations: p.locations.filter(x => x !== val) }));
 
-  const addLink = (val = linkInput.trim()) => {
-    if (val && !form.productUrls.includes(val)) {
-      setForm(p => ({ ...p, productUrls: [...p.productUrls, val] }));
-      setLinkInput('');
-    }
-  };
-  const removeLink = (val: string) =>
-    setForm(p => ({ ...p, productUrls: p.productUrls.filter(x => x !== val) }));
-
   return (
     <div className="w-full">
-      {/* Progress */}
+      {/* ── Progress bar ── */}
       <div className="card mb-0 rounded-b-none border-b-0 px-4 pt-4 pb-3"
            style={{ background: 'var(--bg-stone)' }}>
         <div className="flex items-start justify-between mb-3 relative">
@@ -131,11 +143,11 @@ export default function PariwaraForm({ onSubmit }: Props) {
         </div>
       </div>
 
-      {/* Content */}
+      {/* ── Step content ── */}
       <div className="card rounded-t-none px-4 pt-5 pb-5">
         <AnimatePresence mode="wait">
 
-          {/* STEP 1 */}
+          {/* ═══ STEP 1 — Produk ═══ */}
           {step === 1 && (
             <motion.div key="s1"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -148,7 +160,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 </p>
               </div>
 
-              {/* Nama produk */}
+              {/* Product name */}
               <div>
                 <label className="field-label">
                   Nama Produk / Brand <span style={{ color: 'var(--amber)' }}>*</span>
@@ -163,7 +175,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 <p className="text-[10px] text-muted mt-1">Nama brand, nama produk, atau keduanya.</p>
               </div>
 
-              {/* Link produk */}
+              {/* Multi-link chip input */}
               <div>
                 <label className="field-label">
                   Link Produk <span className="font-normal text-muted">(Opsional)</span>
@@ -190,11 +202,13 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     <Plus className="w-5 h-5" />
                   </button>
                 </div>
+
+                {/* Chips */}
                 <div className="flex flex-wrap gap-1.5 p-3 rounded-xl min-h-[48px] items-center border border-theme"
                      style={{ background: 'var(--bg-stone)' }}>
-                  {form.productUrls.length === 0 ? (
-                    <span className="text-[11px] text-muted">Belum ada link. Boleh dilewati.</span>
-                  ) : form.productUrls.map((url, i) => (
+                  {links.length === 0 ? (
+                    <span className="text-[11px] text-muted">Belum ada link. Tambahkan minimal 1 atau lewati.</span>
+                  ) : links.map((url, i) => (
                     <span key={i} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-theme max-w-full"
                           style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
                       <Link className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--sage)' }} />
@@ -206,27 +220,33 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     </span>
                   ))}
                 </div>
-                <p className="text-[10px] text-muted mt-1">
-                  Link Shopee, Tokopedia, website, atau WhatsApp. Bisa lebih dari satu.
-                </p>
               </div>
 
               {/* Deskripsi + USP */}
               <div>
-                <label className="field-label">
-                  Deskripsi & Kelebihan Produk <span className="font-normal text-muted">(Opsional tapi direkomendasikan)</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="field-label" style={{ marginBottom: 0 }}>
+                    Deskripsi & Kelebihan Produk <span className="font-normal text-muted">(Opsional tapi direkomendasikan)</span>
+                  </label>
+                  <span
+                    className="text-[10px] font-code flex-shrink-0 ml-2"
+                    style={{ color: form.productDetail.length >= 450 ? 'var(--amber)' : 'var(--text-muted)' }}
+                  >
+                    {form.productDetail.length}/500
+                  </span>
+                </div>
                 <textarea
                   className="text-field"
                   rows={5}
+                  maxLength={500}
                   placeholder={`Ceritakan:\n• Produk ini apa dan terbuat dari apa?\n• Apa yang bikin produkmu beda / unggul?\n• Harga kisaran berapa?\n• Siapa yang paling cocok beli produk ini?`}
                   value={form.productDetail}
-                  onChange={e => setForm(p => ({ ...p, productDetail: e.target.value }))}
-                  style={{ resize: 'vertical', minHeight: '110px' }}
+                  onChange={e => setForm(p => ({ ...p, productDetail: e.target.value.slice(0, 500) }))}
                 />
+                <p className="text-[10px] text-muted mt-1">Maksimal 500 karakter agar analisis lebih cepat.</p>
               </div>
 
-              {/* Foto */}
+              {/* Photo upload */}
               <div>
                 <label className="field-label">
                   Foto Produk <span className="font-normal text-muted">(Opsional)</span>
@@ -241,7 +261,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 >
                   <Upload className="w-5 h-5 mx-auto mb-1.5" style={{ color: 'var(--sage)' }} />
                   <p className="text-[11px] font-semibold text-ink2">Klik atau drag foto produk di sini</p>
-                  <p className="text-[10px] text-muted mt-0.5">JPG, PNG, WEBP</p>
+                  <p className="text-[10px] text-muted mt-0.5">JPG, PNG, WEBP (maks. 5 foto)</p>
                   <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
                     onChange={e => { if (e.target.files) handleFiles(e.target.files); }} />
                 </div>
@@ -263,14 +283,16 @@ export default function PariwaraForm({ onSubmit }: Props) {
             </motion.div>
           )}
 
-          {/* STEP 2 */}
+          {/* ═══ STEP 2 — Media ═══ */}
           {step === 2 && (
             <motion.div key="s2"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.18 }} className="space-y-4">
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Mau iklan di mana?</h3>
-                <p className="text-[11px] text-muted mt-1 leading-relaxed">Pilih saluran media yang akan kamu gunakan. Bisa lebih dari satu.</p>
+                <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                  Pilih saluran media yang akan kamu gunakan. Bisa lebih dari satu.
+                </p>
               </div>
               <div className="space-y-2">
                 {MEDIA_CATEGORIES.map(m => {
@@ -298,14 +320,16 @@ export default function PariwaraForm({ onSubmit }: Props) {
             </motion.div>
           )}
 
-          {/* STEP 3 */}
+          {/* ═══ STEP 3 — Generasi ═══ */}
           {step === 3 && (
             <motion.div key="s3"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.18 }} className="space-y-4">
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Siapa target pembelimu?</h3>
-                <p className="text-[11px] text-muted mt-1 leading-relaxed">Pilih kelompok usia yang paling mungkin membeli produkmu. Bisa lebih dari satu.</p>
+                <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                  Pilih kelompok usia yang paling mungkin membeli produkmu. Bisa lebih dari satu.
+                </p>
               </div>
               <div className="space-y-2">
                 {TARGET_GENERATIONS.map(g => {
@@ -339,7 +363,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
             </motion.div>
           )}
 
-          {/* STEP 4 */}
+          {/* ═══ STEP 4 — Lokasi ═══ */}
           {step === 4 && (
             <motion.div key="s4"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
@@ -402,7 +426,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
           )}
         </AnimatePresence>
 
-        {/* Footer nav */}
+        {/* ── Footer navigation ── */}
         <div className="flex items-center gap-3 mt-6 pt-4 border-t border-theme">
           <button type="button" onClick={goBack}
             className={`btn-secondary flex-none px-4 gap-1.5 ${step === 1 ? 'invisible pointer-events-none' : ''}`}

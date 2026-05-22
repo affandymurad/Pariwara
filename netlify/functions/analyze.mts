@@ -1,6 +1,7 @@
 import type { Context } from "@netlify/functions";
 import Anthropic from "@anthropic-ai/sdk";
 
+// ─── Types ────────────────────────────────────────────────────
 interface AnalyzeBody {
   productName:          string;
   productDetail?:       string;
@@ -10,6 +11,7 @@ interface AnalyzeBody {
   locations?:           string[];
 }
 
+// ─── Label maps ───────────────────────────────────────────────
 const MEDIA_LABELS: Record<string, string> = {
   socmed:      "Media Sosial (Instagram, TikTok, Facebook, WhatsApp)",
   digital_ads: "Iklan Digital & Web (Google Ads, SEO, Portal Berita)",
@@ -26,19 +28,31 @@ const GEN_LABELS: Record<string, string> = {
   boomers:   "Baby Boomers (1946–1964) — layanan personal, teks jelas, Grup WA & FB",
 };
 
+// ─── CORS headers ─────────────────────────────────────────────
 const CORS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+// ─── Handler ──────────────────────────────────────────────────
 export default async function handler(req: Request, _ctx: Context) {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405, headers: CORS });
+  // Pre-flight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS });
+  }
 
+  if (req.method !== "POST") {
+    return Response.json({ error: "Method not allowed" }, { status: 405, headers: CORS });
+  }
+
+  // Parse body
   let body: AnalyzeBody;
-  try { body = await req.json(); }
-  catch { return Response.json({ error: "Invalid JSON body" }, { status: 400, headers: CORS }); }
+  try {
+    body = await req.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400, headers: CORS });
+  }
 
   const {
     productName,
@@ -49,90 +63,68 @@ export default async function handler(req: Request, _ctx: Context) {
     locations           = [],
   } = body;
 
-  if (!productName?.trim()) return Response.json({ error: "productName wajib diisi." }, { status: 400, headers: CORS });
+  if (!productName?.trim()) {
+    return Response.json({ error: "productName wajib diisi." }, { status: 400, headers: CORS });
+  }
 
-  const mediaTxt = selectedMedia.map(id => `  - ${MEDIA_LABELS[id] ?? id}`).join("\n") || "  - (tidak dipilih)";
-  const genTxt   = selectedGenerations.map(id => `  - ${GEN_LABELS[id] ?? id}`).join("\n") || "  - (tidak dipilih)";
-  const locTxt   = locations.join(", ") || "(tidak ditentukan)";
-  const urlTxt   = productUrls.length ? productUrls.join(", ") : "(tidak disertakan)";
-  const firstUrl = productUrls[0] ?? "";
+  // Truncate productDetail to keep prompt short → faster response, less token usage
+  const detailTrunc = (productDetail?.trim() || "(tidak diisi)").slice(0, 500);
+  const urlTxt      = productUrls.length ? productUrls.slice(0, 2).join(", ") : "";
 
-  const prompt = `Kamu adalah konsultan periklanan senior spesialis Ekonomi Kreatif Indonesia (Ekraf).
-Tugasmu: buat rekomendasi strategi iklan yang sangat spesifik, actionable, dan berbasis data.
+  const mediaTxt = selectedMedia.map(id => MEDIA_LABELS[id] ?? id).join(", ") || "tidak dipilih";
+  const genTxt   = selectedGenerations.map(id => GEN_LABELS[id] ?? id).join(", ") || "tidak dipilih";
+  const locTxt   = locations.slice(0, 5).join(", ") || "tidak ditentukan";
 
----
-PROFIL PRODUK:
-- Nama Produk/Brand: ${productName}
-- Deskripsi & Keunggulan: ${productDetail?.trim() || "(tidak diisi)"}
-- Link Produk (marketplace/website/WA): ${urlTxt}
+  const prompt = `Konsultan iklan Ekraf Indonesia. Buat strategi iklan singkat dan actionable.
 
-PARAMETER KAMPANYE:
-- Saluran Media:
-${mediaTxt}
-- Target Demografi:
-${genTxt}
-- Area & Platform Pemasaran: ${locTxt}
----
+PRODUK: ${productName}
+DETAIL: ${detailTrunc}${urlTxt ? `\nLINK: ${urlTxt}` : ""}
+MEDIA: ${mediaTxt}
+DEMOGRAFI: ${genTxt}
+LOKASI/PLATFORM: ${locTxt}
 
-INSTRUKSI OUTPUT:
-Balas HANYA JSON valid, tanpa markdown backtick, tanpa teks lain di luar JSON.
+Balas HANYA JSON valid, tanpa backtick, tanpa teks lain.
 
-{
-  "recommendedPlatforms": [
-    {
-      "name": "string (maks 50 karakter)",
-      "description": "string (1-2 kalimat, apa & kenapa cocok)",
-      "reasoning": "string (alasan strategis berdasarkan demografi & media, 1 kalimat)",
-      "icon": "string (salah satu: Flame|Laptop|Globe|Users|BookOpen|Tv|Smartphone)"
-    }
-  ],
-  "copywritingStyles": [
-    {
-      "title": "string (nama gaya & target, maks 60 karakter)",
-      "example": "string (contoh teks iklan NYATA untuk ${productName}, pakai emoji, langsung bisa dipakai${firstUrl ? `, sertakan link ${firstUrl} sebagai CTA` : ''})",
-      "tips": "string (1-2 tip praktis)"
-    }
-  ],
-  "marketplaceStrategies": [
-    {
-      "title": "string (judul strategi, maks 60 karakter)",
-      "details": "string (penjelasan strategi yang spesifik untuk saluran terkait dari daftar: ${locTxt} — bisa marketplace, platform sosmed, kota, atau saluran lain, 2-3 kalimat)",
-      "actionItems": ["string (aksi konkret 1)", "string (aksi konkret 2)", "string (aksi konkret 3)"]
-    }
-  ],
-  "quickWins": [
-    "string (aksi konkret yang bisa dilakukan hari ini atau minggu ini)"
-  ]
-}
+{"recommendedPlatforms":[{"name":"string(maks40kar)","description":"string(1kalimat)","reasoning":"string(1kalimat)","icon":"Flame|Laptop|Globe|Users|BookOpen|Tv|Smartphone"}],"copywritingStyles":[{"title":"string(maks50kar)","example":"string(teks iklan ${productName}, emoji, maks150kar${urlTxt ? `, CTA: ${urlTxt.split(",")[0].trim()}` : ""})","tips":"string(1tip)"}],"marketplaceStrategies":[{"title":"string(maks50kar)","details":"string(1-2kalimat, spesifik ${locTxt})","actionItems":["string","string"]}],"quickWins":["string","string","string"]}
 
 KETENTUAN:
-- recommendedPlatforms: 3-4 item sesuai media & generasi dipilih
-- copywritingStyles: 1 gaya per generasi dipilih (maks 3)
-- marketplaceStrategies: 2-3 strategi, masing-masing fokus pada satu saluran dari daftar (${locTxt})
-- quickWins: tepat 3 item, sangat actionable
-- Bahasa Indonesia natural, mudah dipahami UMKM
-- Contoh copywriting HARUS sebut nama "${productName}" secara eksplisit
-- Jika link produk tersedia, sertakan dalam contoh copywriting sebagai CTA
+- recommendedPlatforms: maks 3 item
+- copywritingStyles: maks 2 item (prioritas generasi utama)
+- marketplaceStrategies: maks 2 item
+- quickWins: tepat 3 item
+- Bahasa Indonesia ringkas
+- Sebutkan "${productName}" di contoh copywriting
 - Jangan output apapun di luar JSON`;
 
+  // Call Claude
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const message = await client.messages.create({
       model:      "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 2048,
       messages:   [{ role: "user", content: prompt }],
     });
 
-    const rawText = message.content.filter(b => b.type === "text").map(b => b.text).join("");
-    const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    const rawText = message.content
+      .filter(b => b.type === "text")
+      .map(b => b.text)
+      .join("");
+
+    const cleaned = rawText
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
 
     let recommendation;
     try {
       recommendation = JSON.parse(cleaned);
     } catch {
       console.error("JSON parse failed. Raw length:", rawText.length, "| Preview:", rawText.slice(0, 400));
-      return Response.json({ error: "AI menghasilkan format tidak valid. Coba lagi." }, { status: 500, headers: CORS });
+      return Response.json(
+        { error: "AI menghasilkan format tidak valid. Coba lagi." },
+        { status: 500, headers: CORS }
+      );
     }
 
     return Response.json({ success: true, recommendation }, { headers: CORS });
