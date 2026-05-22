@@ -29,7 +29,7 @@ const STEPS = [
 const EMPTY_FORM: PariwaraFormData = {
   productName:         '',
   productDetail:       '',
-  productUrls:         [],
+  productUrls:          [],
   photos:              [],
   selectedMedia:       [],
   selectedGenerations: [],
