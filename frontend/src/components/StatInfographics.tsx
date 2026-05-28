@@ -1,122 +1,183 @@
 import React, { useState } from 'react';
-import { TrendingUp, Users, Database, ChevronDown, ChevronUp, Utensils, Hammer, Shirt, Sparkles } from 'lucide-react';
+import { TrendingUp, Users, Database, ChevronDown, ChevronUp, Utensils, Hammer, Shirt, Sparkles, Award } from 'lucide-react';
 import { NATIONAL_STATS_2024, CREATIVE_SUBSECTORS } from '../data/statistics';
 
-const subsectorIcons: Record<string, React.ReactNode> = {
-  Utensils: <Utensils className="w-3.5 h-3.5" style={{ color: 'var(--amber)' }} />,
-  Hammer:   <Hammer   className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />,
-  Shirt:    <Shirt    className="w-3.5 h-3.5" style={{ color: 'var(--sage)' }} />,
-  Sparkles: <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--text-ink2)' }} />,
-};
-
-const subsectorBarColor: Record<string, string> = {
-  Utensils: 'var(--amber)',
-  Hammer:   'var(--text-muted)',
-  Shirt:    'var(--sage)',
-  Sparkles: 'var(--text-ink2)',
+const subsectorConfig: Record<string, {
+  icon: React.ReactNode;
+  color: string;
+  lightBg: string;
+  emoji: string;
+}> = {
+  Utensils: {
+    icon:    <Utensils className="w-4 h-4" />,
+    color:   'var(--amber)',
+    lightBg: 'var(--amber-light)',
+    emoji:   '🍜',
+  },
+  Hammer: {
+    icon:    <Hammer className="w-4 h-4" />,
+    color:   'var(--text-muted)',
+    lightBg: 'var(--bg-stone)',
+    emoji:   '🪡',
+  },
+  Shirt: {
+    icon:    <Shirt className="w-4 h-4" />,
+    color:   'var(--sage)',
+    lightBg: 'var(--sage-light)',
+    emoji:   '👗',
+  },
+  Sparkles: {
+    icon:    <Sparkles className="w-4 h-4" />,
+    color:   'var(--text-ink2)',
+    lightBg: 'var(--bg-stone)',
+    emoji:   '🎨',
+  },
 };
 
 export default function StatInfographics() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="card p-4">
-      {/* Header row */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="module-icon module-icon-sage">
-            <TrendingUp className="w-4 h-4" />
-          </div>
-          <div>
-            <h2 className="text-sm font-display font-bold text-ink leading-tight">
-              Ekraf Indonesia {NATIONAL_STATS_2024.year}
-            </h2>
-            <p className="text-[10px] text-muted">Sumber: {NATIONAL_STATS_2024.source}</p>
-          </div>
-        </div>
-        <button
-          onClick={() => setOpen(v => !v)}
-          className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-theme transition-colors hover:bg-stone"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {open ? 'Tutup' : 'Detail'}
-          {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        </button>
-      </div>
+    <div className="card overflow-hidden">
+      {/* Accent bar top */}
+      <div className="h-[3px]" style={{
+        background: 'linear-gradient(90deg, var(--amber) 0%, var(--sage) 50%, var(--text-muted) 100%)',
+      }} />
 
-      {/* Insight callout */}
-      <div className="rounded-xl p-3 mb-3" style={{ background: 'var(--sage-light)' }}>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--sage-dark)' }}>
-          💡 <strong>Tahukah kamu?</strong> Ekonomi kreatif Indonesia menyerap{' '}
-          <strong>24,3 juta tenaga kerja</strong> — lebih besar dari total penduduk Australia!
-          Produkmu adalah bagian dari industri senilai <strong>Rp 1.413 triliun</strong>.
-        </p>
-      </div>
-
-      {/* Key metrics */}
-      <div className="grid grid-cols-2 gap-2.5 mb-1">
-        <div className="rounded-xl p-3" style={{ background: 'var(--bg-stone)' }}>
-          <div className="flex items-center gap-1.5 mb-1">
-            <Users className="w-3.5 h-3.5" style={{ color: 'var(--sage)' }} />
-            <span className="text-[9px] font-code font-bold uppercase tracking-wider" style={{ color: 'var(--sage)' }}>
-              Tenaga Kerja
-            </span>
+      <div className="p-4">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="module-icon module-icon-amber">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-display font-bold text-ink leading-tight">
+                Ekraf Indonesia {NATIONAL_STATS_2024.year}
+              </h2>
+              <p className="text-[10px] text-muted">Sumber: {NATIONAL_STATS_2024.source}</p>
+            </div>
           </div>
-          <div className="font-display text-2xl font-bold text-ink leading-none">
-            {NATIONAL_STATS_2024.totalWorkers}
-          </div>
-          <div className="text-[10px] text-muted mt-1">Juta Orang</div>
+          <button
+            onClick={() => setOpen(v => !v)}
+            className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-theme transition-colors hover:bg-stone"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {open ? 'Tutup' : 'Detail'}
+            {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
         </div>
 
-        <div className="rounded-xl p-3" style={{ background: 'var(--bg-stone)' }}>
-          <div className="flex items-center gap-1.5 mb-1">
-            <Database className="w-3.5 h-3.5" style={{ color: 'var(--amber)' }} />
-            <span className="text-[9px] font-code font-bold uppercase tracking-wider" style={{ color: 'var(--amber)' }}>
-              PDB Nasional
-            </span>
-          </div>
-          <div className="font-display text-xl font-bold text-ink leading-none">
-            Rp {NATIONAL_STATS_2024.gdpContribution}T
-          </div>
-          <div className="text-[10px] text-muted mt-1">
-            = {NATIONAL_STATS_2024.gdpPercentage}% dari PDB
-          </div>
-        </div>
-      </div>
-
-      {/* Expandable detail */}
-      {open && (
-        <div className="mt-3 pt-3 border-t border-theme space-y-2.5 animate-[fadeIn_0.2s_ease]">
-          <p className="text-[11px] font-bold text-ink2 font-display">
-            Distribusi per Subsektor — produkmu masuk mana?
-          </p>
-
-          {CREATIVE_SUBSECTORS.map((sub, i) => (
-            <div key={i} className="rounded-xl p-3" style={{ background: 'var(--bg-stone)' }}>
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-1.5">
-                  {subsectorIcons[sub.icon]}
-                  <span className="text-[11px] font-semibold text-ink2">{sub.name}</span>
-                </div>
-                <span className="text-[11px] font-code font-bold text-ink">{sub.percentage}%</span>
+        {/* Hero numbers — big visual impact */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* Workers card */}
+          <div className="relative rounded-2xl p-4 overflow-hidden"
+               style={{ background: 'var(--sage-light)' }}>
+            <div className="absolute -right-3 -bottom-3 text-5xl opacity-20 select-none">👥</div>
+            <div className="relative">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Users className="w-3.5 h-3.5" style={{ color: 'var(--sage)' }} />
+                <span className="text-[9px] font-code font-bold uppercase tracking-wider"
+                      style={{ color: 'var(--sage)' }}>Tenaga Kerja</span>
               </div>
-              <div className="progress-track mb-1">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${sub.percentage}%`, background: subsectorBarColor[sub.icon] }}
-                />
+              <div className="font-display font-bold leading-none mb-1"
+                   style={{ fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', color: 'var(--sage-dark)' }}>
+                24,3<span className="text-base font-sans ml-1" style={{ color: 'var(--sage)' }}>Juta</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] text-muted">Kontribusi subsektor</span>
-                <span className="text-[9px] font-semibold text-ink2">{sub.workers}M tenaga kerja</span>
+              <p className="text-[10px] leading-snug" style={{ color: 'var(--sage-dark)', opacity: 0.75 }}>
+                Lebih besar dari populasi Australia
+              </p>
+            </div>
+          </div>
+
+          {/* GDP card */}
+          <div className="relative rounded-2xl p-4 overflow-hidden"
+               style={{ background: 'var(--amber-light)' }}>
+            <div className="absolute -right-3 -bottom-3 text-5xl opacity-20 select-none">💰</div>
+            <div className="relative">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Database className="w-3.5 h-3.5" style={{ color: 'var(--amber)' }} />
+                <span className="text-[9px] font-code font-bold uppercase tracking-wider"
+                      style={{ color: 'var(--amber)' }}>PDB Nasional</span>
+              </div>
+              <div className="font-display font-bold leading-none mb-1"
+                   style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', color: 'var(--amber)' }}>
+                Rp 1.413T
+              </div>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                   style={{ background: 'var(--amber)', color: 'white' }}>
+                <Award className="w-3 h-3" />
+                7,8% dari PDB
               </div>
             </div>
-          ))}
+          </div>
+        </div>
 
-          <div className="rounded-xl p-3 text-[10px] leading-relaxed" style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
-            <strong style={{ color: 'var(--amber)' }}>Insight Pariwara:</strong> Kuliner, Kriya &
-            Fashion menguasai 89,5% lapangan kerja ekraf. Audiens lokal paling mudah connect dengan
-            produk dari subsektor ini — jadikan keaslian produk sebagai daya tarik utama iklanmu!
+        {/* Insight callout — refined */}
+        <div className="rounded-xl px-3.5 py-2.5 flex items-start gap-2.5"
+             style={{ background: 'var(--bg-stone)', border: '1px solid var(--border)' }}>
+          <span className="text-base leading-none mt-0.5">💡</span>
+          <p className="text-[11px] leading-relaxed text-ink2">
+            Produkmu adalah bagian dari ekosistem senilai{' '}
+            <strong className="text-ink">Rp 1.413 triliun</strong>.
+            Iklan yang tepat bisa membuka peluang ke{' '}
+            <strong className="text-ink">24,3 juta</strong> tenaga kerja dan konsumennya.
+          </p>
+        </div>
+      </div>
+
+      {/* Expandable subsector detail */}
+      {open && (
+        <div className="border-t border-theme px-4 pt-4 pb-5 space-y-3"
+             style={{ background: 'var(--bg-stone)', animation: 'fadeIn 0.2s ease' }}>
+
+          <p className="text-[11px] font-display font-bold text-ink">
+            Distribusi Subsektor Ekraf — produkmu masuk mana?
+          </p>
+
+          <div className="space-y-2.5">
+            {CREATIVE_SUBSECTORS.map((sub, i) => {
+              const cfg = subsectorConfig[sub.icon];
+              return (
+                <div key={i} className="rounded-xl overflow-hidden border border-theme bg-card">
+                  {/* Row header */}
+                  <div className="flex items-center gap-3 px-3 pt-3 pb-2">
+                    {/* Icon badge */}
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                         style={{ background: cfg.lightBg, color: cfg.color }}>
+                      {cfg.icon}
+                    </div>
+
+                    {/* Name + workers */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-ink truncate">{sub.name}</span>
+                        <span className="text-[11px] font-code font-bold flex-shrink-0"
+                              style={{ color: cfg.color }}>
+                          {sub.percentage}%
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-muted">{sub.workers}M tenaga kerja</span>
+                    </div>
+                  </div>
+
+                  {/* Progress bar — full-width, accent colour */}
+                  <div className="h-1.5 w-full" style={{ background: 'var(--border)' }}>
+                    <div className="h-full rounded-full transition-all duration-500"
+                         style={{ width: `${sub.percentage}%`, background: cfg.color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom insight */}
+          <div className="rounded-xl p-3 text-[10px] leading-relaxed"
+               style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
+            <strong style={{ color: 'var(--amber)' }}>Insight Pariwara:</strong>{' '}
+            Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.
+            Audiens lokal paling mudah <em>connect</em> dengan produk dari subsektor ini —
+            jadikan keaslian produk sebagai daya tarik utama iklanmu!
           </div>
         </div>
       )}
