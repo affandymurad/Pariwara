@@ -36,7 +36,7 @@ export default function App() {
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       <Header />
 
-      <main className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-4 md:px-6 lg:px-8 py-5 pb-16 space-y-4">
+      <main className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 md:px-8 lg:px-12 py-5 pb-16 space-y-4">
         <AnimatePresence mode="wait">
           {!formData ? (
             <motion.div
@@ -55,10 +55,10 @@ export default function App() {
 
                 {/* Always-visible hero content */}
                 <div className="px-4 pt-5 pb-4 text-center">
-                  <h2 className="text-[15px] font-display font-bold text-ink mb-2">
+                  <h2 className="text-lg font-display font-bold text-ink mb-2">
                     Bingung iklan produkmu harus mulai dari mana? 🤔
                   </h2>
-                  <p className="text-xs text-muted leading-relaxed mb-4">
+                  <p className="text-sm text-muted leading-relaxed mb-4">
                     <strong className="text-ink2">Pariwara</strong> bantu kamu bikin strategi iklan yang tepat sasaran —
                     cocok untuk pelaku Ekraf Indonesia. Isi 4 langkah, langsung dapat panduan lengkap:{' '}
                     platform terbaik, cara nulis iklan, hingga strategi jualan di marketplace.
@@ -71,7 +71,7 @@ export default function App() {
                       <div className="absolute -right-2 -bottom-2 text-4xl opacity-15 select-none">👥</div>
                       <div className="flex items-center gap-1.5 mb-1">
                         <Users className="w-3 h-3" style={{ color: 'var(--sage)' }} />
-                        <span className="text-[9px] font-code font-bold uppercase tracking-wider" style={{ color: 'var(--sage)' }}>Tenaga Kerja</span>
+                        <span className="text-xs font-code font-bold uppercase tracking-wider" style={{ color: 'var(--sage)' }}>Tenaga Kerja</span>
                       </div>
                       <div className="font-display font-bold leading-none" style={{ fontSize: '1.35rem', color: 'var(--sage-dark)' }}>
                         24,3<span className="text-xs font-sans ml-1" style={{ color: 'var(--sage)' }}>Juta</span>
@@ -83,12 +83,12 @@ export default function App() {
                       <div className="absolute -right-2 -bottom-2 text-4xl opacity-15 select-none">💰</div>
                       <div className="flex items-center gap-1.5 mb-1">
                         <Database className="w-3 h-3" style={{ color: 'var(--amber)' }} />
-                        <span className="text-[9px] font-code font-bold uppercase tracking-wider" style={{ color: 'var(--amber)' }}>PDB Ekraf</span>
+                        <span className="text-xs font-code font-bold uppercase tracking-wider" style={{ color: 'var(--amber)' }}>PDB Ekraf</span>
                       </div>
                       <div className="font-display font-bold leading-none mb-1" style={{ fontSize: '1rem', color: 'var(--amber)' }}>
                         Rp 1.413T
                       </div>
-                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-bold"
                            style={{ background: 'var(--amber)', color: 'white' }}>
                         <Award className="w-2.5 h-2.5" />7,8% PDB
                       </div>
@@ -98,7 +98,7 @@ export default function App() {
                   {/* Toggle button */}
                   <button
                     onClick={() => setStatsOpen(v => !v)}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
                     style={{ color: 'var(--text-muted)', background: 'var(--bg-stone)' }}
                   >
                     <TrendingUp className="w-3 h-3" />
@@ -120,7 +120,7 @@ export default function App() {
                     >
                       <div className="px-4 pb-4 pt-1 border-t border-theme space-y-3"
                            style={{ background: 'var(--bg-stone)' }}>
-                        <p className="text-[11px] font-display font-bold text-ink pt-3">
+                        <p className="text-sm font-display font-bold text-ink pt-3">
                           Distribusi per Subsektor — produkmu masuk mana?
                         </p>
 
@@ -136,11 +136,11 @@ export default function App() {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2">
-                                      <span className="text-[11px] font-bold text-ink truncate">{sub.name}</span>
-                                      <span className="text-[11px] font-code font-bold flex-shrink-0"
+                                      <span className="text-sm font-bold text-ink truncate">{sub.name}</span>
+                                      <span className="text-sm font-code font-bold flex-shrink-0"
                                             style={{ color: cfg.color }}>{sub.percentage}%</span>
                                     </div>
-                                    <span className="text-[9px] text-muted">{sub.workers}M tenaga kerja</span>
+                                    <span className="text-xs text-muted">{sub.workers}M tenaga kerja</span>
                                   </div>
                                 </div>
                                 <div className="h-1.5 w-full" style={{ background: 'var(--border)' }}>
@@ -152,14 +152,14 @@ export default function App() {
                           })}
                         </div>
 
-                        <div className="rounded-xl p-3 text-[10px] leading-relaxed"
+                        <div className="rounded-xl p-3 text-xs leading-relaxed"
                              style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
                           <strong style={{ color: 'var(--amber)' }}>Insight Pariwara:</strong>{' '}
                           Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.
                           Jadikan keaslian produk sebagai daya tarik utama iklanmu!
                         </div>
 
-                        <p className="text-[9px] font-code text-muted text-center">
+                        <p className="text-xs font-code text-muted text-center">
                           Sumber: {NATIONAL_STATS_2024.source} · {NATIONAL_STATS_2024.year}
                         </p>
                       </div>
@@ -184,7 +184,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <footer className="text-center text-[9px] font-code text-muted uppercase tracking-widest py-5">
+      <footer className="text-center text-xs font-code text-muted uppercase tracking-widest py-5">
         Pariwara oleh Affandy Murad © 2026 · All rights reserved
       </footer>
     </div>

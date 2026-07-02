@@ -91,7 +91,7 @@
   .btn-secondary:hover { background-color: var(--bg-stone); }
 
   .field-label {
-    @apply block text-[10px] font-bold uppercase tracking-[0.08em] font-mono mb-1.5;
+    @apply block text-xs font-bold uppercase tracking-[0.08em] font-mono mb-1.5;
     color: var(--text-ink2);
   }
 
@@ -132,7 +132,7 @@
   }
 
   .param-tag {
-    @apply text-[10px] font-semibold px-2.5 py-1 rounded-full border;
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full border;
     border-color: var(--border);
   }
 

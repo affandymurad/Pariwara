@@ -121,7 +121,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
             const active = s.id === step;
             return (
               <div key={s.id} className="flex flex-col items-center gap-1 flex-1 relative z-10">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all ${
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
                   done   ? 'text-white border-transparent' :
                   active ? 'text-white shadow-lg border-transparent' :
                            'border-theme bg-card text-muted'
@@ -131,7 +131,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 }}>
                   {done ? <Check className="w-3.5 h-3.5" /> : s.id}
                 </div>
-                <span className={`text-[9px] font-code font-bold text-center uppercase tracking-wide ${active ? 'text-ink' : 'text-muted'}`}>
+                <span className={`text-xs font-code font-bold text-center uppercase tracking-wide ${active ? 'text-ink' : 'text-muted'}`}>
                   {s.label}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
 
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Detail Produk Kamu</h3>
-                <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                <p className="text-sm text-muted mt-1 leading-relaxed">
                   Ceritakan produkmu — semakin lengkap info yang kamu berikan, semakin tajam rekomendasi iklannya! 🎯
                 </p>
               </div>
@@ -172,7 +172,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   value={form.productName}
                   onChange={e => setForm(p => ({ ...p, productName: e.target.value }))}
                 />
-                <p className="text-[10px] text-muted mt-1">Nama brand, nama produk, atau keduanya.</p>
+                <p className="text-xs text-muted mt-1">Nama brand, nama produk, atau keduanya.</p>
               </div>
 
               {/* Multi-link chip input */}
@@ -207,7 +207,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 <div className="flex flex-wrap gap-1.5 p-3 rounded-xl min-h-[48px] items-center border border-theme"
                      style={{ background: 'var(--bg-stone)' }}>
                   {links.length === 0 ? (
-                    <span className="text-[11px] text-muted">Belum ada link. Tambahkan minimal 1 atau lewati.</span>
+                    <span className="text-sm text-muted">Belum ada link. Tambahkan minimal 1 atau lewati.</span>
                   ) : links.map((url, i) => (
                     <span key={i} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-theme max-w-full"
                           style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
@@ -229,7 +229,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     Deskripsi & Kelebihan Produk <span className="font-normal text-muted">(Opsional tapi direkomendasikan)</span>
                   </label>
                   <span
-                    className="text-[10px] font-code flex-shrink-0 ml-2"
+                    className="text-xs font-code flex-shrink-0 ml-2"
                     style={{ color: form.productDetail.length >= 450 ? 'var(--amber)' : 'var(--text-muted)' }}
                   >
                     {form.productDetail.length}/500
@@ -243,7 +243,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   value={form.productDetail}
                   onChange={e => setForm(p => ({ ...p, productDetail: e.target.value.slice(0, 500) }))}
                 />
-                <p className="text-[10px] text-muted mt-1">Maksimal 500 karakter agar analisis lebih cepat.</p>
+                <p className="text-xs text-muted mt-1">Maksimal 500 karakter agar analisis lebih cepat.</p>
               </div>
 
               {/* Photo upload */}
@@ -260,8 +260,8 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   onDrop={e => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); }}
                 >
                   <Upload className="w-5 h-5 mx-auto mb-1.5" style={{ color: 'var(--sage)' }} />
-                  <p className="text-[11px] font-semibold text-ink2">Klik atau drag foto produk di sini</p>
-                  <p className="text-[10px] text-muted mt-0.5">JPG, PNG, WEBP (maks. 5 foto)</p>
+                  <p className="text-sm font-semibold text-ink2">Klik atau drag foto produk di sini</p>
+                  <p className="text-xs text-muted mt-0.5">JPG, PNG, WEBP (maks. 5 foto)</p>
                   <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
                     onChange={e => { if (e.target.files) handleFiles(e.target.files); }} />
                 </div>
@@ -290,7 +290,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
               transition={{ duration: 0.18 }} className="space-y-4">
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Mau iklan di mana?</h3>
-                <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                <p className="text-sm text-muted mt-1 leading-relaxed">
                   Pilih saluran media yang akan kamu gunakan. Bisa lebih dari satu.
                 </p>
               </div>
@@ -307,7 +307,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-bold text-ink">{m.name}</div>
-                        <div className="text-[10px] text-muted mt-0.5 leading-snug">{m.description}</div>
+                        <div className="text-xs text-muted mt-0.5 leading-snug">{m.description}</div>
                       </div>
                       <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
                            style={{ background: sel ? 'var(--sage)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
@@ -327,7 +327,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
               transition={{ duration: 0.18 }} className="space-y-4">
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Siapa target pembelimu?</h3>
-                <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                <p className="text-sm text-muted mt-1 leading-relaxed">
                   Pilih kelompok usia yang paling mungkin membeli produkmu. Bisa lebih dari satu.
                 </p>
               </div>
@@ -345,12 +345,12 @@ export default function PariwaraForm({ onSubmit }: Props) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="text-xs font-bold text-ink">{g.name}</span>
-                          <span className="text-[9px] font-code px-1.5 py-0.5 rounded-md border border-theme"
+                          <span className="text-xs font-code px-1.5 py-0.5 rounded-md border border-theme"
                                 style={{ background: 'var(--bg-card)', color: 'var(--text-muted)' }}>
                             {g.span}
                           </span>
                         </div>
-                        <p className="text-[10px] text-muted leading-snug">{g.description}</p>
+                        <p className="text-xs text-muted leading-snug">{g.description}</p>
                       </div>
                       <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
                            style={{ background: sel ? 'var(--sage)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
@@ -370,7 +370,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
               transition={{ duration: 0.18 }} className="space-y-4">
               <div>
                 <h3 className="text-base font-display font-bold text-ink">Jualan di mana?</h3>
-                <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                <p className="text-sm text-muted mt-1 leading-relaxed">
                   Tambahkan kota, provinsi, atau marketplace. Strategi akan disesuaikan dengan area pilihanmu.
                 </p>
               </div>
@@ -396,7 +396,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 <div className="flex flex-wrap gap-1.5 p-3 rounded-xl min-h-[48px] items-center mb-3 border border-theme"
                      style={{ background: 'var(--bg-stone)' }}>
                   {form.locations.length === 0 ? (
-                    <span className="text-[11px] text-muted">Belum ada lokasi. Tambahkan minimal 1.</span>
+                    <span className="text-sm text-muted">Belum ada lokasi. Tambahkan minimal 1.</span>
                   ) : form.locations.map((loc, i) => (
                     <span key={i} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-theme"
                           style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
@@ -407,13 +407,13 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     </span>
                   ))}
                 </div>
-                <p className="text-[9px] font-code font-bold text-muted uppercase tracking-wider mb-1.5">Pilihan Cepat:</p>
+                <p className="text-xs font-code font-bold text-muted uppercase tracking-wider mb-1.5">Pilihan Cepat:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {LOCATION_PRESETS.map(p => {
                     const added = form.locations.includes(p);
                     return (
                       <button key={p} type="button" disabled={added} onClick={() => addChip(p)}
-                        className={`text-[10px] font-semibold px-2.5 py-1.5 rounded-full border transition-all ${
+                        className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border transition-all ${
                           added ? 'opacity-35 cursor-not-allowed' : 'hover:border-sage cursor-pointer'}`}
                         style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: added ? 'var(--text-muted)' : 'var(--text-ink2)' }}>
                         {added ? `✓ ${p}` : `+ ${p}`}

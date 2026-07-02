@@ -5,7 +5,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md border-b border-theme"
             style={{ background: 'color-mix(in srgb, var(--bg-surface) 90%, transparent)' }}>
-      <div className="max-w-md mx-auto flex items-center justify-between px-4 py-3">
+      <div className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 lg:px-12 py-3">
         {/* Brand */}
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm"
@@ -14,7 +14,7 @@ export default function Header() {
           </div>
           <div>
             <h1 className="text-xl font-display font-bold leading-none text-ink">Pariwara</h1>
-            <p className="text-[9px] font-code text-muted uppercase tracking-widest mt-0.5">
+            <p className="text-xs font-code text-muted uppercase tracking-widest mt-0.5">
               Asisten Strategi Iklan Ekraf
             </p>
           </div>
@@ -22,7 +22,7 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-code font-semibold px-2.5 py-1 rounded-full border border-theme"
+          <span className="text-xs font-code font-semibold px-2.5 py-1 rounded-full border border-theme"
                 style={{ background: 'var(--bg-stone)', color: 'var(--text-muted)' }}>
             v2.0 · 2024 Stats
           </span>
@@ -30,7 +30,7 @@ export default function Header() {
             href="https://affandymurad.github.io/"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
+            className="flex items-center gap-1.5 text-sm font-semibold px-2.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
             style={{ background: 'var(--sage-light)', color: 'var(--sage)', borderColor: 'var(--sage-light)' }}
           >
             <User className="w-3 h-3" />

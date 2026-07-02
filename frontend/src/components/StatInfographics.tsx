@@ -55,12 +55,12 @@ export default function StatInfographics() {
               <h2 className="text-sm font-display font-bold text-ink leading-tight">
                 Ekraf Indonesia {NATIONAL_STATS_2024.year}
               </h2>
-              <p className="text-[10px] text-muted">Sumber: {NATIONAL_STATS_2024.source}</p>
+              <p className="text-xs text-muted">Sumber: {NATIONAL_STATS_2024.source}</p>
             </div>
           </div>
           <button
             onClick={() => setOpen(v => !v)}
-            className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-theme transition-colors hover:bg-stone"
+            className="flex items-center gap-1 text-sm font-semibold px-3 py-1.5 rounded-full border border-theme transition-colors hover:bg-stone"
             style={{ color: 'var(--text-muted)' }}
           >
             {open ? 'Tutup' : 'Detail'}
@@ -77,14 +77,14 @@ export default function StatInfographics() {
             <div className="relative">
               <div className="flex items-center gap-1.5 mb-2">
                 <Users className="w-3.5 h-3.5" style={{ color: 'var(--sage)' }} />
-                <span className="text-[9px] font-code font-bold uppercase tracking-wider"
+                <span className="text-xs font-code font-bold uppercase tracking-wider"
                       style={{ color: 'var(--sage)' }}>Tenaga Kerja</span>
               </div>
               <div className="font-display font-bold leading-none mb-1"
                    style={{ fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', color: 'var(--sage-dark)' }}>
                 24,3<span className="text-base font-sans ml-1" style={{ color: 'var(--sage)' }}>Juta</span>
               </div>
-              <p className="text-[10px] leading-snug" style={{ color: 'var(--sage-dark)', opacity: 0.75 }}>
+              <p className="text-xs leading-snug" style={{ color: 'var(--sage-dark)', opacity: 0.75 }}>
                 Lebih besar dari populasi Australia
               </p>
             </div>
@@ -97,14 +97,14 @@ export default function StatInfographics() {
             <div className="relative">
               <div className="flex items-center gap-1.5 mb-2">
                 <Database className="w-3.5 h-3.5" style={{ color: 'var(--amber)' }} />
-                <span className="text-[9px] font-code font-bold uppercase tracking-wider"
+                <span className="text-xs font-code font-bold uppercase tracking-wider"
                       style={{ color: 'var(--amber)' }}>PDB Nasional</span>
               </div>
               <div className="font-display font-bold leading-none mb-1"
                    style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', color: 'var(--amber)' }}>
                 Rp 1.413T
               </div>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
                    style={{ background: 'var(--amber)', color: 'white' }}>
                 <Award className="w-3 h-3" />
                 7,8% dari PDB
@@ -117,7 +117,7 @@ export default function StatInfographics() {
         <div className="rounded-xl px-3.5 py-2.5 flex items-start gap-2.5"
              style={{ background: 'var(--bg-stone)', border: '1px solid var(--border)' }}>
           <span className="text-base leading-none mt-0.5">💡</span>
-          <p className="text-[11px] leading-relaxed text-ink2">
+          <p className="text-sm leading-relaxed text-ink2">
             Produkmu adalah bagian dari ekosistem senilai{' '}
             <strong className="text-ink">Rp 1.413 triliun</strong>.
             Iklan yang tepat bisa membuka peluang ke{' '}
@@ -131,7 +131,7 @@ export default function StatInfographics() {
         <div className="border-t border-theme px-4 pt-4 pb-5 space-y-3"
              style={{ background: 'var(--bg-stone)', animation: 'fadeIn 0.2s ease' }}>
 
-          <p className="text-[11px] font-display font-bold text-ink">
+          <p className="text-sm font-display font-bold text-ink">
             Distribusi Subsektor Ekraf — produkmu masuk mana?
           </p>
 
@@ -151,13 +151,13 @@ export default function StatInfographics() {
                     {/* Name + workers */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-bold text-ink truncate">{sub.name}</span>
-                        <span className="text-[11px] font-code font-bold flex-shrink-0"
+                        <span className="text-sm font-bold text-ink truncate">{sub.name}</span>
+                        <span className="text-sm font-code font-bold flex-shrink-0"
                               style={{ color: cfg.color }}>
                           {sub.percentage}%
                         </span>
                       </div>
-                      <span className="text-[9px] text-muted">{sub.workers}M tenaga kerja</span>
+                      <span className="text-xs text-muted">{sub.workers}M tenaga kerja</span>
                     </div>
                   </div>
 
@@ -172,7 +172,7 @@ export default function StatInfographics() {
           </div>
 
           {/* Bottom insight */}
-          <div className="rounded-xl p-3 text-[10px] leading-relaxed"
+          <div className="rounded-xl p-3 text-xs leading-relaxed"
                style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
             <strong style={{ color: 'var(--amber)' }}>Insight Pariwara:</strong>{' '}
             Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.

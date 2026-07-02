@@ -210,7 +210,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           Merumuskan Strategi Pariwara...
         </h3>
 
-        <p className="text-[10px] font-code text-muted mt-1 uppercase tracking-wider text-center">
+        <p className="text-xs font-code text-muted mt-1 uppercase tracking-wider text-center">
           Claude Sonnet 4.6 sedang bekerja
         </p>
 
@@ -234,7 +234,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
                 }}
               />
               <span
-                className="text-[10px] font-code"
+                className="text-xs font-code"
                 style={{
                   color: i <= logIdx ? 'var(--text-ink2)' : 'var(--text-muted)',
                 }}
@@ -297,7 +297,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
         </div>
 
         <div>
-          <p className="text-[9px] font-code uppercase tracking-widest opacity-75 mb-0.5">
+          <p className="text-xs font-code uppercase tracking-widest opacity-75 mb-0.5">
             Analisis Selesai
           </p>
           <h3 className="text-sm font-display font-bold leading-snug">
@@ -308,7 +308,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
 
       {/* Params summary */}
       <div className="card p-4">
-        <p className="text-[9px] font-code font-bold text-muted uppercase tracking-wider mb-2">
+        <p className="text-xs font-code font-bold text-muted uppercase tracking-wider mb-2">
           Parameter Analisis:
         </p>
 
@@ -359,7 +359,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             <BarChart2 className="w-4 h-4" />
           </div>
 
-          <h4 className="text-[10px] font-code font-bold text-ink2 uppercase tracking-wider">
+          <h4 className="text-xs font-code font-bold text-ink2 uppercase tracking-wider">
             I. Platform & Saluran Iklan Terbaik
           </h4>
         </div>
@@ -369,7 +369,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             <div key={i} className="rounded-xl p-3" style={{ background: 'var(--bg-stone)' }}>
               <h5 className="text-xs font-display font-bold text-ink flex items-center gap-2 mb-1">
                 <span
-                  className="w-5 h-5 rounded-md text-white text-[10px] font-code font-bold flex items-center justify-center flex-shrink-0"
+                  className="w-5 h-5 rounded-md text-white text-xs font-code font-bold flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--sage)' }}
                 >
                   {i + 1}
@@ -377,12 +377,12 @@ export default function AnalysisResult({ formData, onReset }: Props) {
                 {p.name}
               </h5>
 
-              <p className="text-[11px] text-ink2 leading-relaxed">
+              <p className="text-sm text-ink2 leading-relaxed">
                 {p.description}
               </p>
 
               <p
-                className="text-[10px] italic mt-2 pt-2 border-t border-theme"
+                className="text-xs italic mt-2 pt-2 border-t border-theme"
                 style={{ color: 'var(--sage)' }}
               >
                 🎯 {p.reasoning}
@@ -399,7 +399,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             <MessageSquare className="w-4 h-4" />
           </div>
 
-          <h4 className="text-[10px] font-code font-bold text-ink2 uppercase tracking-wider">
+          <h4 className="text-xs font-code font-bold text-ink2 uppercase tracking-wider">
             II. Contoh Copywriting Iklan
           </h4>
         </div>
@@ -408,7 +408,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           {rec?.copywritingStyles?.map((c, i) => (
             <div key={i}>
               <p
-                className="text-[10px] font-code font-bold uppercase tracking-wide mb-2"
+                className="text-xs font-code font-bold uppercase tracking-wide mb-2"
                 style={{ color: 'var(--amber)' }}
               >
                 ⚡ {c.title}
@@ -424,7 +424,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
                 {c.example}
               </div>
 
-              <p className="text-[10px] text-muted mt-2 leading-relaxed">
+              <p className="text-xs text-muted mt-2 leading-relaxed">
                 💡 <strong>Tips:</strong> {c.tips}
               </p>
             </div>
@@ -442,7 +442,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             <Store className="w-4 h-4" />
           </div>
 
-          <h4 className="text-[10px] font-code font-bold text-ink2 uppercase tracking-wider">
+          <h4 className="text-xs font-code font-bold text-ink2 uppercase tracking-wider">
             III. Strategi Kelola Marketplace
           </h4>
         </div>
@@ -454,7 +454,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
                 📌 {s.title}
               </h5>
 
-              <p className="text-[11px] text-muted leading-relaxed mb-2">
+              <p className="text-sm text-muted leading-relaxed mb-2">
                 {s.details}
               </p>
 
@@ -462,7 +462,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
                 {s.actionItems.map((a, j) => (
                   <li
                     key={j}
-                    className="flex items-start gap-2 text-[10px] text-ink2 font-medium"
+                    className="flex items-start gap-2 text-xs text-ink2 font-medium"
                   >
                     <div
                       className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5"
@@ -492,7 +492,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             </div>
 
             <h4
-              className="text-[10px] font-code font-bold uppercase tracking-wider"
+              className="text-xs font-code font-bold uppercase tracking-wider"
               style={{ color: 'var(--sage-dark)' }}
             >
               IV. Quick Wins — Mulai Hari Ini!
@@ -507,13 +507,13 @@ export default function AnalysisResult({ formData, onReset }: Props) {
                 style={{ background: 'var(--bg-card)' }}
               >
                 <span
-                  className="w-5 h-5 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                  className="w-5 h-5 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                   style={{ background: 'var(--sage)' }}
                 >
                   {i + 1}
                 </span>
 
-                <p className="text-[11px] text-ink2 leading-relaxed">
+                <p className="text-sm text-ink2 leading-relaxed">
                   {w}
                 </p>
               </div>
@@ -539,7 +539,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           <RefreshCw className="w-4 h-4" /> Buat Analisis Baru
         </button>
 
-        <p className="text-center text-[9px] font-code text-muted uppercase tracking-widest">
+        <p className="text-center text-xs font-code text-muted uppercase tracking-widest">
           Pariwara oleh Affandy Murad
         </p>
       </div>
