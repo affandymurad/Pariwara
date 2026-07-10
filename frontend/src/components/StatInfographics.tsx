@@ -78,11 +78,11 @@ export default function StatInfographics() {
               <div className="flex items-center gap-1.5 mb-2">
                 <Users className="w-3.5 h-3.5" style={{ color: 'var(--sage)' }} />
                 <span className="text-xs font-code font-bold uppercase tracking-wider"
-                      style={{ color: 'var(--sage)' }}>Tenaga Kerja</span>
+                      style={{ color: 'var(--sage-text)' }}>Tenaga Kerja</span>
               </div>
               <div className="font-display font-bold leading-none mb-1"
                    style={{ fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', color: 'var(--sage-dark)' }}>
-                24,3<span className="text-base font-sans ml-1" style={{ color: 'var(--sage)' }}>Juta</span>
+                24,3<span className="text-base font-sans ml-1" style={{ color: 'var(--sage-text)' }}>Juta</span>
               </div>
               <p className="text-xs leading-snug" style={{ color: 'var(--sage-dark)', opacity: 0.75 }}>
                 Lebih besar dari populasi Australia
@@ -98,14 +98,14 @@ export default function StatInfographics() {
               <div className="flex items-center gap-1.5 mb-2">
                 <Database className="w-3.5 h-3.5" style={{ color: 'var(--amber)' }} />
                 <span className="text-xs font-code font-bold uppercase tracking-wider"
-                      style={{ color: 'var(--amber)' }}>PDB Nasional</span>
+                      style={{ color: 'var(--amber-text)' }}>PDB Nasional</span>
               </div>
               <div className="font-display font-bold leading-none mb-1"
-                   style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', color: 'var(--amber)' }}>
+                   style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', color: 'var(--amber-text)' }}>
                 Rp 1.413T
               </div>
               <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                   style={{ background: 'var(--amber)', color: 'white' }}>
+                   style={{ background: 'var(--amber)', color: 'var(--amber-contrast)' }}>
                 <Award className="w-3 h-3" />
                 7,8% dari PDB
               </div>
@@ -174,7 +174,7 @@ export default function StatInfographics() {
           {/* Bottom insight */}
           <div className="rounded-xl p-3 text-xs leading-relaxed"
                style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
-            <strong style={{ color: 'var(--amber)' }}>Insight Pariwara:</strong>{' '}
+            <strong style={{ color: 'var(--amber-text)' }}>Insight Pariwara:</strong>{' '}
             Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.
             Audiens lokal paling mudah <em>connect</em> dengan produk dari subsektor ini —
             jadikan keaslian produk sebagai daya tarik utama iklanmu!

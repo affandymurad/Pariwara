@@ -14,7 +14,7 @@ export default function Header() {
           </div>
           <div>
             <h1 className="text-xl font-display font-bold leading-none text-ink">Pariwara</h1>
-            <p className="text-xs font-code text-muted uppercase tracking-widest mt-0.5">
+            <p className="text-xs text-muted tracking-wide mt-0.5">
               Asisten Strategi Iklan Ekraf
             </p>
           </div>
@@ -22,10 +22,6 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-code font-semibold px-2.5 py-1 rounded-full border border-theme"
-                style={{ background: 'var(--bg-stone)', color: 'var(--text-muted)' }}>
-            v2.0 · 2024 Stats
-          </span>
           <a
             href="https://affandymurad.github.io/"
             target="_blank"

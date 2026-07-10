@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check,
+  Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check, History,
   Smartphone, Globe, BookOpen, Tv, Users,
   Gamepad2, Flame, Laptop, Briefcase, HeartHandshake, Link,
 } from 'lucide-react';
@@ -20,10 +20,10 @@ interface Props {
 }
 
 const STEPS = [
-  { id: 1, label: 'Produk'    },
-  { id: 2, label: 'Media'     },
-  { id: 3, label: 'Demografi' },
-  { id: 4, label: 'Lokasi'    },
+  { id: 1, label: 'Produk'  },
+  { id: 2, label: 'Media'   },
+  { id: 3, label: 'Pembeli' },
+  { id: 4, label: 'Lokasi'  },
 ];
 
 const EMPTY_FORM: PariwaraFormData = {
@@ -36,19 +36,74 @@ const EMPTY_FORM: PariwaraFormData = {
   locations:           [],
 };
 
+// Draft disimpan otomatis supaya isian tidak hilang kalau tab tertutup/reload
+// tidak sengaja. Foto sengaja tidak disimpan (blob URL mati setelah reload).
+export const PARIWARA_DRAFT_KEY = 'pariwara_draft_v1';
+
+const STEP_ERROR: Record<number, string> = {
+  1: 'Isi dulu nama produk / brand kamu ya.',
+  2: 'Pilih minimal satu saluran media dulu.',
+  3: 'Pilih minimal satu kelompok pembeli dulu.',
+  4: 'Tambahkan minimal satu lokasi atau marketplace dulu.',
+};
+
+function loadDraft(): { form: Partial<PariwaraFormData>; links: string[]; hasContent: boolean } {
+  try {
+    const raw = localStorage.getItem(PARIWARA_DRAFT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const draftForm: Partial<PariwaraFormData> = parsed.form ?? {};
+      const draftLinks: string[] = parsed.links ?? [];
+      const hasContent = !!(
+        draftForm.productName ||
+        draftForm.productDetail ||
+        draftLinks.length ||
+        draftForm.locations?.length ||
+        draftForm.selectedMedia?.length ||
+        draftForm.selectedGenerations?.length
+      );
+      return { form: draftForm, links: draftLinks, hasContent };
+    }
+  } catch { /* draft korup, abaikan */ }
+  return { form: {}, links: [], hasContent: false };
+}
+
 export default function PariwaraForm({ onSubmit }: Props) {
+  const [draftInfo] = useState(loadDraft);
+  const [draftNoticeDismissed, setDraftNoticeDismissed] = useState(false);
   const [step, setStep]           = useState(1);
-  const [form, setForm]           = useState<PariwaraFormData>(EMPTY_FORM);
+  const [form, setForm]           = useState<PariwaraFormData>(() => ({ ...EMPTY_FORM, ...draftInfo.form, photos: [] }));
   const [linkInput, setLinkInput] = useState('');
-  const [links, setLinks]         = useState<string[]>([]);
+  const [links, setLinks]         = useState<string[]>(() => draftInfo.links);
   const [chipInput, setChipInput] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [attemptedNext, setAttemptedNext] = useState(false);
+  const [photoNotice, setPhotoNotice] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // sync links[] → form.productUrl
+  // Notifikasi batas foto hilang otomatis setelah beberapa detik.
+  useEffect(() => {
+    if (!photoNotice) return;
+    const t = setTimeout(() => setPhotoNotice(false), 4000);
+    return () => clearTimeout(t);
+  }, [photoNotice]);
+
+  // Simpan draft setiap ada perubahan (kecuali foto, tidak bisa disimpan aman).
+  useEffect(() => {
+    const { photos: _photos, ...draftForm } = form;
+    localStorage.setItem(PARIWARA_DRAFT_KEY, JSON.stringify({ form: draftForm, links }));
+  }, [form, links]);
+
+  // Reset status "sudah dicoba" tiap pindah step, supaya pesan error step
+  // sebelumnya tidak nempel dan step baru tidak langsung menegur pengguna.
+  useEffect(() => {
+    setAttemptedNext(false);
+  }, [step]);
+
+  // sync links[] → form.productUrls
   const syncLinks = (next: string[]) => {
     setLinks(next);
-    setForm(p => ({ ...p, productUrl: next.join(', ') }));
+    setForm(p => ({ ...p, productUrls: next }));
   };
 
   const addLink = (val = linkInput.trim()) => {
@@ -69,7 +124,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
   };
 
   const goNext = () => {
-    if (!isStepValid()) return;
+    if (!isStepValid()) { setAttemptedNext(true); return; }
     if (step < 4) { setStep(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     else onSubmit(form);
   };
@@ -78,13 +133,19 @@ export default function PariwaraForm({ onSubmit }: Props) {
   };
 
   // ── Photo handlers ───────────────────────────────────────────
+  const MAX_PHOTOS = 5;
   const handleFiles = (files: FileList) => {
-    const newPhotos = Array.from(files).map(f => ({
-      id:   Math.random().toString(36).substr(2, 8),
-      url:  URL.createObjectURL(f),
-      name: f.name,
-    }));
-    setForm(p => ({ ...p, photos: [...p.photos, ...newPhotos] }));
+    setForm(p => {
+      const remaining = Math.max(0, MAX_PHOTOS - p.photos.length);
+      const selected  = Array.from(files).slice(0, remaining);
+      if (selected.length < files.length) setPhotoNotice(true);
+      const newPhotos = selected.map(f => ({
+        id:   Math.random().toString(36).substr(2, 8),
+        url:  URL.createObjectURL(f),
+        name: f.name,
+      }));
+      return { ...p, photos: [...p.photos, ...newPhotos] };
+    });
   };
   const removePhoto = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -110,6 +171,20 @@ export default function PariwaraForm({ onSubmit }: Props) {
 
   return (
     <div className="w-full">
+      {/* Draft restored notice */}
+      {draftInfo.hasContent && !draftNoticeDismissed && (
+        <div className="rounded-xl p-3 mb-3 text-xs flex items-start gap-2"
+             style={{ background: 'var(--sage-light)', color: 'var(--sage-text)' }}>
+          <History className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <span className="flex-1">
+            Isian sebelumnya berhasil dipulihkan. Kalau ada foto yang diunggah, tolong unggah ulang ya.
+          </span>
+          <button type="button" onClick={() => setDraftNoticeDismissed(true)} className="flex-shrink-0 hover:opacity-70">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* ── Progress bar ── */}
       <div className="card mb-0 rounded-b-none border-b-0 px-4 pt-4 pb-3"
            style={{ background: 'var(--bg-stone)' }}>
@@ -126,7 +201,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   active ? 'text-white shadow-lg border-transparent' :
                            'border-theme bg-card text-muted'
                 }`} style={{
-                  background: done ? 'var(--text-muted)' : active ? 'var(--sage)' : undefined,
+                  background: done ? 'var(--neutral-btn)' : active ? 'var(--sage-btn)' : undefined,
                   boxShadow:  active ? '0 0 0 4px var(--sage-light)' : undefined,
                 }}>
                   {done ? <Check className="w-3.5 h-3.5" /> : s.id}
@@ -154,16 +229,16 @@ export default function PariwaraForm({ onSubmit }: Props) {
               transition={{ duration: 0.18 }} className="space-y-4">
 
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Detail Produk Kamu</h3>
+                <h3 className="text-base font-display font-bold text-ink">Kenalkan Produkmu ke Kami</h3>
                 <p className="text-sm text-muted mt-1 leading-relaxed">
-                  Ceritakan produkmu — semakin lengkap info yang kamu berikan, semakin tajam rekomendasi iklannya! 🎯
+                  Ceritakan produkmu selengkap mungkin. Makin detail ceritanya, makin jitu rekomendasi iklan yang kamu dapat! 🎯
                 </p>
               </div>
 
               {/* Product name */}
               <div>
                 <label className="field-label">
-                  Nama Produk / Brand <span style={{ color: 'var(--amber)' }}>*</span>
+                  Nama Produk / Brand <span style={{ color: 'var(--amber-text)' }}>*</span>
                 </label>
                 <input
                   className="text-field"
@@ -180,6 +255,9 @@ export default function PariwaraForm({ onSubmit }: Props) {
                 <label className="field-label">
                   Link Produk <span className="font-normal text-muted">(Opsional)</span>
                 </label>
+                <p className="text-xs text-muted mb-2">
+                  Tempel link, lalu tekan <strong className="text-ink2">Enter</strong> atau tombol <strong className="text-ink2">+</strong> untuk menambahkan. Bisa lebih dari satu link.
+                </p>
                 <div className="flex gap-2 mb-2">
                   <div className="relative flex-1">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -213,8 +291,8 @@ export default function PariwaraForm({ onSubmit }: Props) {
                           style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
                       <Link className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--sage)' }} />
                       <span className="truncate max-w-[180px]">{url}</span>
-                      <button type="button" onClick={() => removeLink(url)}
-                        className="text-muted hover:text-ink transition-colors flex-shrink-0">
+                      <button type="button" onClick={() => removeLink(url)} aria-label="Hapus link"
+                        className="text-muted hover:text-ink transition-colors flex-shrink-0 p-1.5 -m-1.5">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -230,7 +308,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   </label>
                   <span
                     className="text-xs font-code flex-shrink-0 ml-2"
-                    style={{ color: form.productDetail.length >= 450 ? 'var(--amber)' : 'var(--text-muted)' }}
+                    style={{ color: form.productDetail.length >= 450 ? 'var(--amber-text)' : 'var(--text-muted)' }}
                   >
                     {form.productDetail.length}/500
                   </span>
@@ -260,11 +338,16 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   onDrop={e => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); }}
                 >
                   <Upload className="w-5 h-5 mx-auto mb-1.5" style={{ color: 'var(--sage)' }} />
-                  <p className="text-sm font-semibold text-ink2">Klik atau drag foto produk di sini</p>
+                  <p className="text-sm font-semibold text-ink2">Ketuk untuk pilih foto produk</p>
                   <p className="text-xs text-muted mt-0.5">JPG, PNG, WEBP (maks. 5 foto)</p>
                   <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
                     onChange={e => { if (e.target.files) handleFiles(e.target.files); }} />
                 </div>
+                {photoNotice && (
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--amber-text)' }}>
+                    Maksimal 5 foto ya, sisanya tidak ikut diunggah.
+                  </p>
+                )}
                 {form.photos.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.photos.map(ph => (
@@ -302,7 +385,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     <button key={m.id} type="button" onClick={() => toggle('selectedMedia', m.id)}
                       className={`choice-card w-full text-left ${sel ? 'selected' : ''}`}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
-                           style={{ background: sel ? 'var(--sage)' : 'var(--bg-card)', color: sel ? 'white' : 'var(--text-muted)' }}>
+                           style={{ background: sel ? 'var(--sage-btn)' : 'var(--bg-card)', color: sel ? 'white' : 'var(--text-muted)' }}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -310,7 +393,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                         <div className="text-xs text-muted mt-0.5 leading-snug">{m.description}</div>
                       </div>
                       <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
-                           style={{ background: sel ? 'var(--sage)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
+                           style={{ background: sel ? 'var(--sage-btn)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
                         {sel && <Check className="w-2.5 h-2.5" />}
                       </div>
                     </button>
@@ -339,7 +422,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     <button key={g.id} type="button" onClick={() => toggle('selectedGenerations', g.id)}
                       className={`choice-card w-full text-left ${sel ? 'selected' : ''}`}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
-                           style={{ background: sel ? 'var(--sage)' : 'var(--bg-card)', color: sel ? 'white' : 'var(--text-muted)' }}>
+                           style={{ background: sel ? 'var(--sage-btn)' : 'var(--bg-card)', color: sel ? 'white' : 'var(--text-muted)' }}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -353,7 +436,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                         <p className="text-xs text-muted leading-snug">{g.description}</p>
                       </div>
                       <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
-                           style={{ background: sel ? 'var(--sage)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
+                           style={{ background: sel ? 'var(--sage-btn)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
                         {sel && <Check className="w-2.5 h-2.5" />}
                       </div>
                     </button>
@@ -376,8 +459,11 @@ export default function PariwaraForm({ onSubmit }: Props) {
               </div>
               <div>
                 <label className="field-label">
-                  Lokasi / Marketplace <span style={{ color: 'var(--amber)' }}>*</span>
+                  Lokasi / Marketplace <span style={{ color: 'var(--amber-text)' }}>*</span>
                 </label>
+                <p className="text-xs text-muted mb-2">
+                  Ketik lokasi, lalu tekan <strong className="text-ink2">Enter</strong> atau tombol <strong className="text-ink2">+</strong> untuk menambahkan. Bisa lebih dari satu.
+                </p>
                 <div className="flex gap-2 mb-2">
                   <input
                     className="text-field flex-1"
@@ -401,7 +487,8 @@ export default function PariwaraForm({ onSubmit }: Props) {
                     <span key={i} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border border-theme"
                           style={{ background: 'var(--bg-card)', color: 'var(--text-ink)' }}>
                       {loc}
-                      <button type="button" onClick={() => removeChip(loc)} className="text-muted hover:text-ink transition-colors">
+                      <button type="button" onClick={() => removeChip(loc)} aria-label="Hapus lokasi"
+                        className="text-muted hover:text-ink transition-colors p-1.5 -m-1.5">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -427,19 +514,28 @@ export default function PariwaraForm({ onSubmit }: Props) {
         </AnimatePresence>
 
         {/* ── Footer navigation ── */}
-        <div className="flex items-center gap-3 mt-6 pt-4 border-t border-theme">
-          <button type="button" onClick={goBack}
-            className={`btn-secondary flex-none px-4 gap-1.5 ${step === 1 ? 'invisible pointer-events-none' : ''}`}
-            style={{ width: 'auto' }}>
-            <ChevronLeft className="w-4 h-4" /> Kembali
-          </button>
-          <button type="button" onClick={goNext} disabled={!isStepValid()} className="btn-primary flex-1 gap-1.5">
-            {step === 4 ? (
-              <><Sparkles className="w-4 h-4" /> Analisa Sekarang</>
-            ) : (
-              <>Lanjut <ChevronRight className="w-4 h-4" /></>
+        <div className="mt-6 pt-4 border-t border-theme">
+          <div className="flex items-center gap-3">
+            {step > 1 && (
+              <button type="button" onClick={goBack}
+                className="btn-secondary flex-none px-4 gap-1.5"
+                style={{ width: 'auto' }}>
+                <ChevronLeft className="w-4 h-4" /> Kembali
+              </button>
             )}
-          </button>
+            <button type="button" onClick={goNext} disabled={!isStepValid()} className="btn-primary flex-1 gap-1.5">
+              {step === 4 ? (
+                <><Sparkles className="w-4 h-4" /> Analisa Sekarang</>
+              ) : (
+                <>Lanjut <ChevronRight className="w-4 h-4" /></>
+              )}
+            </button>
+          </div>
+          {attemptedNext && !isStepValid() && (
+            <p className="text-xs text-center mt-2" style={{ color: 'var(--amber-text)' }}>
+              {STEP_ERROR[step]}
+            </p>
+          )}
         </div>
       </div>
     </div>

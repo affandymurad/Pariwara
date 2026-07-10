@@ -10,13 +10,26 @@
     --bg-stone:     #F5F2EE;
     --text-ink:     #1E1B18;
     --text-ink2:    #3A3630;
-    --text-muted:   #7A7065;
+    --text-muted:   #6B6055;
     --border:       rgba(0,0,0,0.09);
     --sage:         #6B8F71;
     --sage-light:   #EAF2EB;
     --sage-dark:    #3D5C42;
     --amber:        #C98A3A;
     --amber-light:  #FDF3E3;
+    /* Fixed (non theme-swapping) tokens: kept dark enough / consistent
+       across light+dark so white/dark text on top always stays readable. */
+    --sage-btn:      #4F7657;
+    --neutral-btn:   #5C534A;
+    --amber-contrast:#2A1B08;
+    /* Readable body-text variants of the accent colors. --amber/--sage are
+       tuned to look good as icons/borders/light backgrounds, but are too
+       washed out for text at 4.5:1 in light mode — use these instead
+       whenever amber/sage is the actual text color, not just an accent. */
+    --amber-text:   #8B5E1E;
+    --sage-text:    var(--sage-dark);
+    --danger-bg:    #FDF2F2;
+    --danger-text:  #DC2626;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -27,13 +40,16 @@
       --bg-stone:     #1E1C19;
       --text-ink:     #F0EDE8;
       --text-ink2:    #D0CCC6;
-      --text-muted:   #7A7268;
+      --text-muted:   #9B9184;
       --border:       rgba(255,255,255,0.09);
       --sage:         #7BA882;
       --sage-light:   #1A2E1C;
       --sage-dark:    #9EC4A2;
       --amber:        #D4943E;
       --amber-light:  #2A1F0A;
+      --amber-text:   #D4943E;
+      --danger-bg:    #2A1212;
+      --danger-text:  #F87171;
     }
   }
 
@@ -73,7 +89,7 @@
 
   .btn-primary {
     @apply flex items-center justify-center gap-2 w-full h-12 rounded-xl font-bold text-sm text-white transition-all active:scale-[0.98];
-    background-color: var(--sage);
+    background-color: var(--sage-btn);
   }
   .btn-primary:hover { filter: brightness(0.9); }
   .btn-primary:disabled {
@@ -91,7 +107,7 @@
   .btn-secondary:hover { background-color: var(--bg-stone); }
 
   .field-label {
-    @apply block text-xs font-bold uppercase tracking-[0.08em] font-mono mb-1.5;
+    @apply block text-[13px] font-bold uppercase tracking-[0.03em] mb-1.5;
     color: var(--text-ink2);
   }
 

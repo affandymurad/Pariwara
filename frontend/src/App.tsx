@@ -10,12 +10,13 @@ import { NATIONAL_STATS_2024, CREATIVE_SUBSECTORS } from './data/statistics';
 const subsectorConfig: Record<string, {
   icon: React.ReactNode;
   color: string;
+  textColor: string;
   lightBg: string;
 }> = {
-  Utensils: { icon: <Utensils className="w-3.5 h-3.5" />, color: 'var(--amber)',     lightBg: 'var(--amber-light)' },
-  Hammer:   { icon: <Hammer   className="w-3.5 h-3.5" />, color: 'var(--text-muted)', lightBg: 'var(--bg-stone)'   },
-  Shirt:    { icon: <Shirt    className="w-3.5 h-3.5" />, color: 'var(--sage)',       lightBg: 'var(--sage-light)'  },
-  Sparkles: { icon: <SparklesIcon className="w-3.5 h-3.5" />, color: 'var(--text-ink2)', lightBg: 'var(--bg-stone)' },
+  Utensils: { icon: <Utensils className="w-3.5 h-3.5" />, color: 'var(--amber)',     textColor: 'var(--amber-text)', lightBg: 'var(--amber-light)' },
+  Hammer:   { icon: <Hammer   className="w-3.5 h-3.5" />, color: 'var(--text-muted)', textColor: 'var(--text-muted)', lightBg: 'var(--bg-stone)'   },
+  Shirt:    { icon: <Shirt    className="w-3.5 h-3.5" />, color: 'var(--sage)',       textColor: 'var(--sage-text)',  lightBg: 'var(--sage-light)'  },
+  Sparkles: { icon: <SparklesIcon className="w-3.5 h-3.5" />, color: 'var(--text-ink2)', textColor: 'var(--text-ink2)', lightBg: 'var(--bg-stone)' },
 };
 
 export default function App() {
@@ -59,40 +60,17 @@ export default function App() {
                     Bingung iklan produkmu harus mulai dari mana? 🤔
                   </h2>
                   <p className="text-sm text-muted leading-relaxed mb-4">
-                    <strong className="text-ink2">Pariwara</strong> bantu kamu bikin strategi iklan yang tepat sasaran —
-                    cocok untuk pelaku Ekraf Indonesia. Isi 4 langkah, langsung dapat panduan lengkap:{' '}
-                    platform terbaik, cara nulis iklan, hingga strategi jualan di marketplace.
+                    <strong className="text-ink2">Pariwara</strong> siap jadi teman strategi iklanmu, dibuat khusus
+                    untuk pelaku Ekraf Indonesia. Isi 4 langkah santai, kamu langsung dapat panduan lengkap:{' '}
+                    platform iklan paling cocok, cara menulis iklan yang memikat, sampai jurus jualan di marketplace.
                   </p>
 
-                  {/* Stats teaser row — always visible */}
-                  <div className="grid grid-cols-2 gap-2.5 mb-3">
-                    <div className="rounded-xl p-3 text-left relative overflow-hidden"
-                         style={{ background: 'var(--sage-light)' }}>
-                      <div className="absolute -right-2 -bottom-2 text-4xl opacity-15 select-none">👥</div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Users className="w-3 h-3" style={{ color: 'var(--sage)' }} />
-                        <span className="text-xs font-code font-bold uppercase tracking-wider" style={{ color: 'var(--sage)' }}>Tenaga Kerja</span>
-                      </div>
-                      <div className="font-display font-bold leading-none" style={{ fontSize: '1.35rem', color: 'var(--sage-dark)' }}>
-                        24,3<span className="text-xs font-sans ml-1" style={{ color: 'var(--sage)' }}>Juta</span>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl p-3 text-left relative overflow-hidden"
-                         style={{ background: 'var(--amber-light)' }}>
-                      <div className="absolute -right-2 -bottom-2 text-4xl opacity-15 select-none">💰</div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Database className="w-3 h-3" style={{ color: 'var(--amber)' }} />
-                        <span className="text-xs font-code font-bold uppercase tracking-wider" style={{ color: 'var(--amber)' }}>PDB Ekraf</span>
-                      </div>
-                      <div className="font-display font-bold leading-none mb-1" style={{ fontSize: '1rem', color: 'var(--amber)' }}>
-                        Rp 1.413T
-                      </div>
-                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-bold"
-                           style={{ background: 'var(--amber)', color: 'white' }}>
-                        <Award className="w-2.5 h-2.5" />7,8% PDB
-                      </div>
-                    </div>
+                  {/* Insight Pariwara — always visible */}
+                  <div className="rounded-xl p-3 text-left text-xs leading-relaxed mb-3"
+                       style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
+                    <strong style={{ color: 'var(--amber-text)' }}>Insight Pariwara:</strong>{' '}
+                    Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.
+                    Jadikan keaslian produk sebagai daya tarik utama iklanmu!
                   </div>
 
                   {/* Toggle button */}
@@ -138,7 +116,7 @@ export default function App() {
                                     <div className="flex items-center justify-between gap-2">
                                       <span className="text-sm font-bold text-ink truncate">{sub.name}</span>
                                       <span className="text-sm font-code font-bold flex-shrink-0"
-                                            style={{ color: cfg.color }}>{sub.percentage}%</span>
+                                            style={{ color: cfg.textColor }}>{sub.percentage}%</span>
                                     </div>
                                     <span className="text-xs text-muted">{sub.workers}M tenaga kerja</span>
                                   </div>
@@ -152,11 +130,34 @@ export default function App() {
                           })}
                         </div>
 
-                        <div className="rounded-xl p-3 text-xs leading-relaxed"
-                             style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
-                          <strong style={{ color: 'var(--amber)' }}>Insight Pariwara:</strong>{' '}
-                          Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.
-                          Jadikan keaslian produk sebagai daya tarik utama iklanmu!
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div className="rounded-xl p-3 text-left relative overflow-hidden"
+                               style={{ background: 'var(--sage-light)' }}>
+                            <div className="absolute -right-2 -bottom-2 text-4xl opacity-15 select-none">👥</div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <Users className="w-3 h-3" style={{ color: 'var(--sage)' }} />
+                              <span className="text-xs font-code font-bold uppercase tracking-wider" style={{ color: 'var(--sage-text)' }}>Tenaga Kerja</span>
+                            </div>
+                            <div className="font-display font-bold leading-none" style={{ fontSize: '1.35rem', color: 'var(--sage-dark)' }}>
+                              24,3<span className="text-xs font-sans ml-1" style={{ color: 'var(--sage-text)' }}>Juta</span>
+                            </div>
+                          </div>
+
+                          <div className="rounded-xl p-3 text-left relative overflow-hidden"
+                               style={{ background: 'var(--amber-light)' }}>
+                            <div className="absolute -right-2 -bottom-2 text-4xl opacity-15 select-none">💰</div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <Database className="w-3 h-3" style={{ color: 'var(--amber)' }} />
+                              <span className="text-xs font-code font-bold uppercase tracking-wider" style={{ color: 'var(--amber-text)' }}>PDB Ekraf</span>
+                            </div>
+                            <div className="font-display font-bold leading-none mb-1" style={{ fontSize: '1rem', color: 'var(--amber-text)' }}>
+                              Rp 1.413T
+                            </div>
+                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-bold"
+                                 style={{ background: 'var(--amber)', color: 'var(--amber-contrast)' }}>
+                              <Award className="w-2.5 h-2.5" />7,8% PDB
+                            </div>
+                          </div>
                         </div>
 
                         <p className="text-xs font-code text-muted text-center">

@@ -9,7 +9,7 @@ export function useAnalyze() {
   const [loading, setLoading] = useState(false);
   const [error,   setError  ] = useState<string | null>(null);
 
-  async function analyze(formData: PariwaraFormData): Promise<AIRecommendation | null> {
+  async function analyze(formData: PariwaraFormData, signal?: AbortSignal): Promise<AIRecommendation | null> {
     setLoading(true);
     setError(null);
 
@@ -17,6 +17,7 @@ export function useAnalyze() {
       const res = await fetch(`${API_BASE}/api/analyze`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal,
         body: JSON.stringify({
           productName:         formData.productName,
           productDetail:       formData.productDetail,
@@ -31,7 +32,7 @@ export function useAnalyze() {
       // tangkap di sini sebelum .json() throw error yang membingungkan
       const contentType = res.headers.get('content-type') ?? '';
       if (!contentType.includes('application/json')) {
-        throw new Error(`Server error ${res.status}: function tidak ditemukan. Cek konfigurasi Netlify.`);
+        throw new Error(`non-json response, status ${res.status}`);
       }
 
       const data = await res.json();
@@ -42,7 +43,13 @@ export function useAnalyze() {
 
       return data.recommendation as AIRecommendation;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.');
+      // Dibatalkan pengguna sendiri (tombol Batal) — bukan kegagalan, jangan tampilkan error.
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return null;
+      }
+      // Detail teknis hanya untuk console — pengguna cukup lihat pesan yang ramah.
+      console.error('[Pariwara] Gagal menganalisis:', err);
+      setError('Analisis gagal diproses. Coba lagi dalam beberapa saat, ya — kalau masih gagal, cek koneksi internet kamu.');
       return null;
     } finally {
       setLoading(false);

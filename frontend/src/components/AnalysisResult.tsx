@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   CheckCircle2, RefreshCw, BarChart2, MessageSquare, Store,
   Zap, Download, AlertTriangle,
@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import type { PariwaraFormData, AIRecommendation } from '../types';
 import { MEDIA_CATEGORIES, TARGET_GENERATIONS } from '../data/statistics';
 import { useAnalyze } from '../hooks/useAnalyze';
+import { PARIWARA_DRAFT_KEY } from './PariwaraForm';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -18,9 +19,9 @@ interface Props {
 const LOGS = [
   'Mengunggah dan memproses parameter produk...',
   'Menganalisis identitas brand & pasar...',
-  'Memetakan perilaku target demografi...',
+  'Memetakan perilaku target pembeli...',
   'Mengoptimasi efektivitas media pilihan...',
-  'Claude sedang merumuskan copywriting...',
+  'Merumuskan contoh copywriting...',
   'Menyusun strategi marketplace lokal...',
   'Menyiapkan laporan Pariwara...',
 ];
@@ -29,22 +30,42 @@ export default function AnalysisResult({ formData, onReset }: Props) {
   const { analyze, loading, error } = useAnalyze();
   const [rec, setRec] = useState<AIRecommendation | null>(null);
   const [logIdx, setLogIdx] = useState(0);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [takingLong, setTakingLong] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Call backend on mount
   useEffect(() => {
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const logTimer = setInterval(() => {
       setLogIdx(i => Math.min(i + 1, LOGS.length - 1));
     }, 650);
 
-    analyze(formData).then(result => {
+    // Kalau lebih dari 8 detik, kasih tahu pengguna bahwa ini normal —
+    // biar tidak dikira aplikasinya macet.
+    const longWaitTimer = setTimeout(() => setTakingLong(true), 8000);
+
+    analyze(formData, controller.signal).then(result => {
       clearInterval(logTimer);
+      clearTimeout(longWaitTimer);
       setLogIdx(LOGS.length - 1);
       if (result) setRec(result);
     });
 
-    return () => clearInterval(logTimer);
+    return () => {
+      clearInterval(logTimer);
+      clearTimeout(longWaitTimer);
+      controller.abort();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const cancelAnalysis = () => {
+    abortRef.current?.abort();
+    onReset();
+  };
 
   // ── PDF export ────────────────────────────────────────────────
   const exportPDF = async () => {
@@ -59,19 +80,23 @@ export default function AnalysisResult({ formData, onReset }: Props) {
     // 1) Override all CSS vars on :root to plain hex values
     // 2) Walk all child elements and strip any inline style containing color-mix/color(
     const SAFE: Record<string, string> = {
-      '--bg-primary':  '#F7F4F0',
-      '--bg-surface':  '#FDFCF9',
-      '--bg-card':     '#FFFFFF',
-      '--bg-stone':    '#F5F2EE',
-      '--text-ink':    '#1E1B18',
-      '--text-ink2':   '#3A3630',
-      '--text-muted':  '#7A7065',
-      '--border':      'rgba(0,0,0,0.09)',
-      '--sage':        '#6B8F71',
-      '--sage-light':  '#EAF2EB',
-      '--sage-dark':   '#3D5C42',
-      '--amber':       '#C98A3A',
-      '--amber-light': '#FDF3E3',
+      '--bg-primary':    '#F7F4F0',
+      '--bg-surface':    '#FDFCF9',
+      '--bg-card':       '#FFFFFF',
+      '--bg-stone':      '#F5F2EE',
+      '--text-ink':      '#1E1B18',
+      '--text-ink2':     '#3A3630',
+      '--text-muted':    '#6B6055',
+      '--border':        'rgba(0,0,0,0.09)',
+      '--sage':          '#6B8F71',
+      '--sage-light':    '#EAF2EB',
+      '--sage-dark':     '#3D5C42',
+      '--sage-text':     '#3D5C42',
+      '--sage-btn':      '#4F7657',
+      '--amber':         '#C98A3A',
+      '--amber-light':   '#FDF3E3',
+      '--amber-text':    '#8B5E1E',
+      '--amber-contrast':'#2A1B08',
     };
 
     const root = document.documentElement;
@@ -211,7 +236,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
         </h3>
 
         <p className="text-xs font-code text-muted mt-1 uppercase tracking-wider text-center">
-          Claude Sonnet 4.6 sedang bekerja
+          Biasanya selesai dalam beberapa detik
         </p>
 
         <div className="w-full rounded-xl p-4 mt-5 space-y-2" style={{ background: 'var(--bg-stone)' }}>
@@ -244,6 +269,16 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             </div>
           ))}
         </div>
+
+        {takingLong && (
+          <p className="text-xs text-center mt-4 leading-relaxed" style={{ color: 'var(--amber-text)' }}>
+            Masih diproses, kadang butuh waktu sedikit lebih lama dari biasanya. Mohon tunggu ya.
+          </p>
+        )}
+
+        <button type="button" onClick={cancelAnalysis} className="text-xs text-muted mt-4 hover:text-ink transition-colors underline">
+          Batal, kembali ke form
+        </button>
       </div>
     );
   }
@@ -254,7 +289,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       <div className="card p-6 flex flex-col items-center gap-4">
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{ background: '#FDF2F2', color: '#DC2626' }}
+          style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)' }}
         >
           <AlertTriangle className="w-6 h-6" />
         </div>
@@ -290,7 +325,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
       {/* Hero */}
       <div
         className="rounded-2xl p-4 flex items-center gap-3.5 text-white"
-        style={{ background: 'var(--sage)' }}
+        style={{ background: 'var(--sage-btn)' }}
       >
         <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
           <CheckCircle2 className="w-6 h-6" />
@@ -344,7 +379,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             <span
               key={i}
               className="param-tag"
-              style={{ background: 'var(--amber-light)', color: 'var(--amber)' }}
+              style={{ background: 'var(--amber-light)', color: 'var(--amber-text)' }}
             >
               📍 {l}
             </span>
@@ -370,7 +405,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
               <h5 className="text-xs font-display font-bold text-ink flex items-center gap-2 mb-1">
                 <span
                   className="w-5 h-5 rounded-md text-white text-xs font-code font-bold flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--sage)' }}
+                  style={{ background: 'var(--sage-btn)' }}
                 >
                   {i + 1}
                 </span>
@@ -383,7 +418,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
 
               <p
                 className="text-xs italic mt-2 pt-2 border-t border-theme"
-                style={{ color: 'var(--sage)' }}
+                style={{ color: 'var(--sage-text)' }}
               >
                 🎯 {p.reasoning}
               </p>
@@ -409,7 +444,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
             <div key={i}>
               <p
                 className="text-xs font-code font-bold uppercase tracking-wide mb-2"
-                style={{ color: 'var(--amber)' }}
+                style={{ color: 'var(--amber-text)' }}
               >
                 ⚡ {c.title}
               </p>
@@ -486,7 +521,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           <div className="flex items-center gap-2.5 mb-3">
             <div
               className="module-icon"
-              style={{ background: 'var(--sage)', color: 'white' }}
+              style={{ background: 'var(--sage-btn)', color: 'white' }}
             >
               <Zap className="w-4 h-4" />
             </div>
@@ -508,7 +543,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
               >
                 <span
                   className="w-5 h-5 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                  style={{ background: 'var(--sage)' }}
+                  style={{ background: 'var(--sage-btn)' }}
                 >
                   {i + 1}
                 </span>
@@ -535,7 +570,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           <Download className="w-5 h-5" /> Download Laporan PDF
         </button>
 
-        <button onClick={onReset} className="btn-secondary gap-2">
+        <button onClick={() => setConfirmReset(true)} className="btn-secondary gap-2">
           <RefreshCw className="w-4 h-4" /> Buat Analisis Baru
         </button>
 
@@ -543,6 +578,36 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           Pariwara oleh Affandy Murad
         </p>
       </div>
+
+      {/* Confirm-before-reset dialog — mencegah hasil kehapus karena salah pencet */}
+      {confirmReset && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={() => setConfirmReset(false)}
+        >
+          <div
+            className="card p-5 max-w-xs w-full text-center space-y-3"
+            onClick={e => e.stopPropagation()}
+          >
+            <h4 className="font-display font-bold text-ink text-base">Mulai Analisis Baru?</h4>
+            <p className="text-sm text-muted leading-relaxed">
+              Strategi yang sedang tampil akan hilang. Download dulu PDF-nya kalau belum, ya.
+            </p>
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setConfirmReset(false)} className="btn-secondary flex-1">
+                Batal
+              </button>
+              <button
+                onClick={() => { localStorage.removeItem(PARIWARA_DRAFT_KEY); onReset(); }}
+                className="btn-primary flex-1"
+              >
+                Ya, Mulai Baru
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
