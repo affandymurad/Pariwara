@@ -9,6 +9,7 @@ export interface PariwaraFormData {
   productDetail:       string;
   productUrls:         string[]; // link marketplace / website / WhatsApp (array)
   photos:              PhotoItem[];
+  goal:                string; // tujuan promosi, opsional
   selectedMedia:       string[];
   selectedGenerations: string[];
   locations:           string[];
@@ -67,4 +68,10 @@ export interface CreativeSubsector {
   percentage: number;
   colorClass: string;
   icon:       string;
+}
+
+export interface PromoGoal {
+  id:   string;
+  name: string;
+  icon: string;
 }

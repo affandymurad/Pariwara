@@ -1,4 +1,4 @@
-import type { MediaCategory, TargetGeneration, CreativeSubsector } from '../types';
+import type { MediaCategory, TargetGeneration, CreativeSubsector, PromoGoal } from '../types';
 
 export const NATIONAL_STATS_2024 = {
   totalWorkers:    24.3,
@@ -34,4 +34,11 @@ export const TARGET_GENERATIONS: TargetGeneration[] = [
 export const LOCATION_PRESETS = [
   'Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Bali', 'Yogyakarta',
   'Shopee', 'Tokopedia', 'TikTok Shop', 'Lazada', 'Bazaar Lokal',
+];
+
+export const PROMO_GOALS: PromoGoal[] = [
+  { id: 'more_customers', name: 'Menambah Pelanggan Baru',   icon: 'Users'         },
+  { id: 'more_sales',     name: 'Meningkatkan Penjualan',    icon: 'TrendingUp'    },
+  { id: 'new_product',    name: 'Memperkenalkan Produk Baru', icon: 'Sparkles'     },
+  { id: 'clear_stock',    name: 'Menghabiskan Stok',         icon: 'PackageCheck' },
 ];

@@ -22,6 +22,7 @@ export function useAnalyze() {
           productName:         formData.productName,
           productDetail:       formData.productDetail,
           productUrls:         formData.productUrls,
+          goal:                formData.goal,
           selectedMedia:       formData.selectedMedia,
           selectedGenerations: formData.selectedGenerations,
           locations:           formData.locations,

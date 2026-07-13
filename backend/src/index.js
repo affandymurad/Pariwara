@@ -28,6 +28,13 @@ const GEN_LABELS = {
   boomers:   'Baby Boomers (1946–1964) — layanan personal, teks jelas, Grup WA & FB',
 };
 
+const GOAL_LABELS = {
+  more_customers: 'Menambah pelanggan baru',
+  more_sales:      'Meningkatkan penjualan',
+  new_product:     'Memperkenalkan produk baru',
+  clear_stock:     'Menghabiskan stok',
+};
+
 // ─── Health check ─────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
@@ -38,6 +45,7 @@ app.post('/api/analyze', async (req, res) => {
       productName,
       productDetail,
       productUrls         = [],
+      goal                = '',
       selectedMedia       = [],
       selectedGenerations = [],
       locations           = [],
@@ -50,6 +58,7 @@ app.post('/api/analyze', async (req, res) => {
     const detailTrunc = (productDetail?.trim() || '(tidak diisi)').slice(0, 500);
     const urlTxt      = productUrls.slice(0, 2).join(', ');
 
+    const goalTxt  = GOAL_LABELS[goal] ?? 'tidak ditentukan';
     const mediaTxt = selectedMedia.map(id => MEDIA_LABELS[id] ?? id).join(', ') || 'tidak dipilih';
     const genTxt   = selectedGenerations.map(id => GEN_LABELS[id] ?? id).join(', ') || 'tidak dipilih';
     const locTxt   = locations.slice(0, 5).join(', ') || 'tidak ditentukan';
@@ -58,6 +67,7 @@ app.post('/api/analyze', async (req, res) => {
 
 PRODUK: ${productName}
 DETAIL: ${detailTrunc}${urlTxt ? `\nLINK: ${urlTxt}` : ''}
+TUJUAN PROMOSI: ${goalTxt}
 MEDIA: ${mediaTxt}
 DEMOGRAFI: ${genTxt}
 LOKASI/PLATFORM: ${locTxt}
@@ -73,6 +83,7 @@ KETENTUAN:
 - quickWins: tepat 3 item
 - Bahasa Indonesia ringkas
 - Sebutkan "${productName}" di contoh copywriting
+- Selaraskan quickWins dengan TUJUAN PROMOSI di atas
 - Jangan output apapun di luar JSON`;
 
     const message = await anthropic.messages.create({

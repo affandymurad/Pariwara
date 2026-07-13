@@ -15,7 +15,7 @@ export default function Header() {
           <div>
             <h1 className="text-xl font-display font-bold leading-none text-ink">Pariwara</h1>
             <p className="text-xs text-muted tracking-wide mt-0.5">
-              Asisten Strategi Iklan Ekraf
+              Bantu Bikin Iklan Lebih Menarik
             </p>
           </div>
         </div>

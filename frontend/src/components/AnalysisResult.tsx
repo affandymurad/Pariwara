@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   CheckCircle2, RefreshCw, BarChart2, MessageSquare, Store,
-  Zap, Download, AlertTriangle,
+  Zap, Download, AlertTriangle, Copy, Check,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { PariwaraFormData, AIRecommendation } from '../types';
@@ -32,7 +32,16 @@ export default function AnalysisResult({ formData, onReset }: Props) {
   const [logIdx, setLogIdx] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
   const [takingLong, setTakingLong] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const copyCaption = async (text: string, idx: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(i => (i === idx ? null : i)), 2000);
+    } catch { /* clipboard tidak tersedia, abaikan */ }
+  };
 
   // Call backend on mount
   useEffect(() => {
@@ -135,7 +144,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
         scrollY: 0,
         windowWidth: source.scrollWidth,
         windowHeight: source.scrollHeight,
-        ignoreElements: (el: Element) => el.id === 'pariwara-action-bar',
+        ignoreElements: (el: Element) => el.id === 'pariwara-action-bar' || el.hasAttribute('data-pdf-ignore'),
       });
 
       const pdf = new jsPDF({
@@ -435,7 +444,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
           </div>
 
           <h4 className="text-xs font-code font-bold text-ink2 uppercase tracking-wider">
-            II. Contoh Copywriting Iklan
+            II. Contoh Caption Iklan
           </h4>
         </div>
 
@@ -458,6 +467,20 @@ export default function AnalysisResult({ formData, onReset }: Props) {
               >
                 {c.example}
               </div>
+
+              <button
+                type="button"
+                data-pdf-ignore="true"
+                onClick={() => copyCaption(c.example, i)}
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
+                style={{ background: 'var(--bg-card)', color: 'var(--text-ink2)' }}
+              >
+                {copiedIdx === i ? (
+                  <><Check className="w-3 h-3" style={{ color: 'var(--sage)' }} /> Tersalin!</>
+                ) : (
+                  <><Copy className="w-3 h-3" /> Salin Caption</>
+                )}
+              </button>
 
               <p className="text-xs text-muted mt-2 leading-relaxed">
                 💡 <strong>Tips:</strong> {c.tips}
@@ -530,7 +553,7 @@ export default function AnalysisResult({ formData, onReset }: Props) {
               className="text-xs font-code font-bold uppercase tracking-wider"
               style={{ color: 'var(--sage-dark)' }}
             >
-              IV. Quick Wins — Mulai Hari Ini!
+              IV. Aksi Cepat — Mulai Hari Ini!
             </h4>
           </div>
 

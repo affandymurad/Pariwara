@@ -1,18 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check, History,
+  Upload, X, Plus, ChevronRight, ChevronLeft, Sparkles, Check, History, Save,
   Smartphone, Globe, BookOpen, Tv, Users,
   Gamepad2, Flame, Laptop, Briefcase, HeartHandshake, Link,
+  TrendingUp, PackageCheck,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { PariwaraFormData } from '../types';
-import { MEDIA_CATEGORIES, TARGET_GENERATIONS, LOCATION_PRESETS } from '../data/statistics';
+import { MEDIA_CATEGORIES, TARGET_GENERATIONS, LOCATION_PRESETS, PROMO_GOALS } from '../data/statistics';
 
 const mediaIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   Smartphone, Globe, BookOpen, Tv, Users,
 };
 const genIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   Gamepad2, Flame, Laptop, Briefcase, HeartHandshake,
+};
+const goalIcons: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+  Users, TrendingUp, Sparkles, PackageCheck,
 };
 
 interface Props {
@@ -31,6 +35,7 @@ const EMPTY_FORM: PariwaraFormData = {
   productDetail:       '',
   productUrls:          [],
   photos:              [],
+  goal:                '',
   selectedMedia:       [],
   selectedGenerations: [],
   locations:           [],
@@ -216,6 +221,9 @@ export default function PariwaraForm({ onSubmit }: Props) {
         <div className="progress-track">
           <div className="progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
         </div>
+        <p className="text-[11px] text-muted text-center mt-2 flex items-center justify-center gap-1">
+          <Save className="w-3 h-3" /> Otomatis tersimpan — boleh lanjut nanti kapan saja
+        </p>
       </div>
 
       {/* ── Step content ── */}
@@ -229,9 +237,12 @@ export default function PariwaraForm({ onSubmit }: Props) {
               transition={{ duration: 0.18 }} className="space-y-4">
 
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Kenalkan Produkmu ke Kami</h3>
+                <h3 className="text-base font-display font-bold text-ink">Kenalkan Usahamu ke Kami</h3>
                 <p className="text-sm text-muted mt-1 leading-relaxed">
-                  Ceritakan produkmu selengkap mungkin. Makin detail ceritanya, makin jitu rekomendasi iklan yang kamu dapat! 🎯
+                  Ceritakan usahamu selengkap mungkin. Makin detail ceritanya, makin jitu ide iklan yang kamu dapat! 🎯
+                </p>
+                <p className="text-xs font-semibold mt-2" style={{ color: 'var(--sage-text)' }}>
+                  ✅ Isi seadanya juga sudah cukup — cuma Nama Usaha & Lokasi yang wajib.
                 </p>
               </div>
 
@@ -248,6 +259,28 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   onChange={e => setForm(p => ({ ...p, productName: e.target.value }))}
                 />
                 <p className="text-xs text-muted mt-1">Nama brand, nama produk, atau keduanya.</p>
+              </div>
+
+              {/* Tujuan promosi */}
+              <div>
+                <label className="field-label">🎯 Apa yang Ingin Dicapai? <span className="font-normal text-muted">(Opsional)</span></label>
+                <div className="grid grid-cols-2 gap-2">
+                  {PROMO_GOALS.map(g => {
+                    const Icon = goalIcons[g.icon] || Sparkles;
+                    const sel  = form.goal === g.id;
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setForm(p => ({ ...p, goal: p.goal === g.id ? '' : g.id }))}
+                        className={`choice-card ${sel ? 'selected' : ''}`}
+                      >
+                        <Icon className="w-4 h-4 flex-shrink-0" style={{ color: sel ? 'var(--sage)' : 'var(--text-muted)' }} />
+                        <span className="text-xs font-bold text-ink leading-snug">{g.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Multi-link chip input */}
@@ -322,6 +355,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   onChange={e => setForm(p => ({ ...p, productDetail: e.target.value.slice(0, 500) }))}
                 />
                 <p className="text-xs text-muted mt-1">Maksimal 500 karakter agar analisis lebih cepat.</p>
+                <p className="text-xs text-muted mt-1">🎤 Capek ngetik? Pakai tombol mic di keyboard HP buat cerita langsung.</p>
               </div>
 
               {/* Photo upload */}
