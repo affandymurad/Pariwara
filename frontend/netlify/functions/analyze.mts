@@ -6,6 +6,7 @@ interface AnalyzeBody {
   productName:          string;
   productDetail?:       string;
   productUrls?:         string[];
+  goal?:                string;
   selectedMedia?:       string[];
   selectedGenerations?: string[];
   locations?:           string[];
@@ -26,6 +27,13 @@ const GEN_LABELS: Record<string, string> = {
   gen_y:     "Milenial Gen Y (1981–1996) — riset online, storytelling, review-driven",
   gen_x:     "Gen X (1965–1980) — fungsionalitas, Facebook & WhatsApp, loyalitas merek",
   boomers:   "Baby Boomers (1946–1964) — layanan personal, teks jelas, Grup WA & FB",
+};
+
+const GOAL_LABELS: Record<string, string> = {
+  more_customers: "Menambah pelanggan baru",
+  more_sales:     "Meningkatkan penjualan",
+  new_product:    "Memperkenalkan produk baru",
+  clear_stock:    "Menghabiskan stok",
 };
 
 // ─── CORS headers ─────────────────────────────────────────────
@@ -58,6 +66,7 @@ export default async function handler(req: Request, _ctx: Context) {
     productName,
     productDetail,
     productUrls         = [],
+    goal                = "",
     selectedMedia       = [],
     selectedGenerations = [],
     locations           = [],
@@ -69,8 +78,9 @@ export default async function handler(req: Request, _ctx: Context) {
 
   // Truncate productDetail to keep prompt short → faster response, less token usage
   const detailTrunc = (productDetail?.trim() || "(tidak diisi)").slice(0, 500);
-  const urlTxt      = productUrls.length ? productUrls.slice(0, 2).join(", ") : "";
+  const urlTxt      = productUrls.slice(0, 2).join(", ");
 
+  const goalTxt  = GOAL_LABELS[goal] ?? "tidak ditentukan";
   const mediaTxt = selectedMedia.map(id => MEDIA_LABELS[id] ?? id).join(", ") || "tidak dipilih";
   const genTxt   = selectedGenerations.map(id => GEN_LABELS[id] ?? id).join(", ") || "tidak dipilih";
   const locTxt   = locations.slice(0, 5).join(", ") || "tidak ditentukan";
@@ -79,6 +89,7 @@ export default async function handler(req: Request, _ctx: Context) {
 
 PRODUK: ${productName}
 DETAIL: ${detailTrunc}${urlTxt ? `\nLINK: ${urlTxt}` : ""}
+TUJUAN PROMOSI: ${goalTxt}
 MEDIA: ${mediaTxt}
 DEMOGRAFI: ${genTxt}
 LOKASI/PLATFORM: ${locTxt}
@@ -94,6 +105,7 @@ KETENTUAN:
 - quickWins: tepat 3 item
 - Bahasa Indonesia ringkas
 - Sebutkan "${productName}" di contoh copywriting
+- Selaraskan quickWins dengan TUJUAN PROMOSI di atas
 - Jangan output apapun di luar JSON`;
 
   // Call Claude
@@ -122,7 +134,7 @@ KETENTUAN:
     } catch {
       console.error("JSON parse failed. Raw length:", rawText.length, "| Preview:", rawText.slice(0, 400));
       return Response.json(
-        { error: "AI menghasilkan format tidak valid. Coba lagi." },
+        { error: "AI menghasilkan format tidak valid. Silakan coba lagi." },
         { status: 500, headers: CORS }
       );
     }
@@ -130,9 +142,9 @@ KETENTUAN:
     return Response.json({ success: true, recommendation }, { headers: CORS });
 
   } catch (err: unknown) {
-    const msg    = err instanceof Error ? err.message : "Server error";
+    const msg    = err instanceof Error ? err.message : "Terjadi kesalahan server.";
     const status = (err as { status?: number })?.status ?? 500;
-    console.error("Anthropic error:", msg);
+    console.error("API error:", msg);
     return Response.json({ error: msg }, { status, headers: CORS });
   }
 }
