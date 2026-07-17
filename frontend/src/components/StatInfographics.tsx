@@ -44,18 +44,18 @@ export default function StatInfographics() {
         background: 'linear-gradient(90deg, var(--amber) 0%, var(--sage) 50%, var(--text-muted) 100%)',
       }} />
 
-      <div className="p-4">
+      <div className="p-5 md:p-8">
         {/* Header row */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
             <div className="module-icon module-icon-amber">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-display font-bold text-ink leading-tight">
+              <h2 className="text-sm md:text-base font-display font-bold text-ink leading-tight">
                 Ekraf Indonesia {NATIONAL_STATS_2024.year}
               </h2>
-              <p className="text-xs text-muted">Sumber: {NATIONAL_STATS_2024.source}</p>
+              <p className="text-xs md:text-sm text-muted">Sumber: {NATIONAL_STATS_2024.source}</p>
             </div>
           </div>
           <button
@@ -69,7 +69,7 @@ export default function StatInfographics() {
         </div>
 
         {/* Hero numbers — big visual impact */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 md:gap-4 mb-5">
           {/* Workers card */}
           <div className="relative rounded-2xl p-4 overflow-hidden"
                style={{ background: 'var(--sage-light)' }}>
@@ -128,14 +128,14 @@ export default function StatInfographics() {
 
       {/* Expandable subsector detail */}
       {open && (
-        <div className="border-t border-theme px-4 pt-4 pb-5 space-y-3"
+        <div className="border-t border-theme px-4 md:px-6 pt-4 md:pt-5 pb-5 md:pb-6 space-y-3"
              style={{ background: 'var(--bg-stone)', animation: 'fadeIn 0.2s ease' }}>
 
-          <p className="text-sm font-display font-bold text-ink">
+          <p className="text-sm md:text-base font-display font-bold text-ink">
             Distribusi Subsektor Ekraf — produkmu masuk mana?
           </p>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-3">
             {CREATIVE_SUBSECTORS.map((sub, i) => {
               const cfg = subsectorConfig[sub.icon];
               return (

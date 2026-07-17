@@ -6,7 +6,7 @@ export default {
     extend: {
       fontFamily: {
         sans:    ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif:   ['"Playfair Display"', 'ui-serif', 'Georgia', 'serif'],
+        serif:   ['"Nunito"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono:    ['"Fira Code"', 'ui-monospace', 'monospace'],
       },
       colors: {

@@ -21,6 +21,7 @@ const goalIcons: Record<string, React.ComponentType<{ className?: string; style?
 
 interface Props {
   onSubmit: (data: PariwaraFormData) => void;
+  onBack?:  () => void;
 }
 
 const STEPS = [
@@ -73,7 +74,7 @@ function loadDraft(): { form: Partial<PariwaraFormData>; links: string[]; hasCon
   return { form: {}, links: [], hasContent: false };
 }
 
-export default function PariwaraForm({ onSubmit }: Props) {
+export default function PariwaraForm({ onSubmit, onBack }: Props) {
   const [draftInfo] = useState(loadDraft);
   const [draftNoticeDismissed, setDraftNoticeDismissed] = useState(false);
   const [step, setStep]           = useState(1);
@@ -135,6 +136,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
   };
   const goBack = () => {
     if (step > 1) { setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else onBack?.();
   };
 
   // ── Photo handlers ───────────────────────────────────────────
@@ -191,17 +193,17 @@ export default function PariwaraForm({ onSubmit }: Props) {
       )}
 
       {/* ── Progress bar ── */}
-      <div className="card mb-0 rounded-b-none border-b-0 px-4 pt-4 pb-3"
+      <div className="card mb-0 rounded-b-none border-b-0 px-5 md:px-8 pt-6 md:pt-7 pb-4 md:pb-5"
            style={{ background: 'var(--bg-stone)' }}>
-        <div className="flex items-start justify-between mb-3 relative">
-          <div className="absolute top-[13px] left-0 right-0 h-0.5"
+        <div className="flex items-start justify-between mb-4 relative">
+          <div className="absolute top-[15px] md:top-[17px] left-0 right-0 h-0.5"
                style={{ background: 'var(--border)', zIndex: 0 }} />
           {STEPS.map(s => {
             const done   = s.id < step;
             const active = s.id === step;
             return (
-              <div key={s.id} className="flex flex-col items-center gap-1 flex-1 relative z-10">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
+              <div key={s.id} className="flex flex-col items-center gap-1.5 flex-1 relative z-10">
+                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-sm md:text-base font-bold border-2 transition-all ${
                   done   ? 'text-white border-transparent' :
                   active ? 'text-white shadow-lg border-transparent' :
                            'border-theme bg-card text-muted'
@@ -209,9 +211,9 @@ export default function PariwaraForm({ onSubmit }: Props) {
                   background: done ? 'var(--neutral-btn)' : active ? 'var(--sage-btn)' : undefined,
                   boxShadow:  active ? '0 0 0 4px var(--sage-light)' : undefined,
                 }}>
-                  {done ? <Check className="w-3.5 h-3.5" /> : s.id}
+                  {done ? <Check className="w-4 h-4" /> : s.id}
                 </div>
-                <span className={`text-xs font-code font-bold text-center uppercase tracking-wide ${active ? 'text-ink' : 'text-muted'}`}>
+                <span className={`text-xs md:text-sm font-code font-bold text-center uppercase tracking-wide ${active ? 'text-ink' : 'text-muted'}`}>
                   {s.label}
                 </span>
               </div>
@@ -221,24 +223,24 @@ export default function PariwaraForm({ onSubmit }: Props) {
         <div className="progress-track">
           <div className="progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
         </div>
-        <p className="text-[11px] text-muted text-center mt-2 flex items-center justify-center gap-1">
+        <p className="text-[11px] md:text-xs text-muted text-center mt-3 flex items-center justify-center gap-1.5">
           <Save className="w-3 h-3" /> Otomatis tersimpan — boleh lanjut nanti kapan saja
         </p>
       </div>
 
       {/* ── Step content ── */}
-      <div className="card rounded-t-none px-4 pt-5 pb-5">
+      <div className="card rounded-t-none px-5 md:px-8 pt-6 md:pt-8 pb-6 md:pb-8">
         <AnimatePresence mode="wait">
 
           {/* ═══ STEP 1 — Produk ═══ */}
           {step === 1 && (
             <motion.div key="s1"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }} className="space-y-4">
+              transition={{ duration: 0.18 }} className="space-y-5 md:space-y-6">
 
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Kenalkan Usahamu ke Kami</h3>
-                <p className="text-sm text-muted mt-1 leading-relaxed">
+                <h3 className="text-lg md:text-xl font-display font-bold text-ink">Kenalkan Usahamu ke Kami</h3>
+                <p className="text-sm md:text-base text-muted mt-1.5 leading-relaxed">
                   Ceritakan usahamu selengkap mungkin. Makin detail ceritanya, makin jitu ide iklan yang kamu dapat! 🎯
                 </p>
                 <p className="text-xs font-semibold mt-2" style={{ color: 'var(--sage-text)' }}>
@@ -264,7 +266,7 @@ export default function PariwaraForm({ onSubmit }: Props) {
               {/* Tujuan promosi */}
               <div>
                 <label className="field-label">🎯 Apa yang Ingin Dicapai? <span className="font-normal text-muted">(Opsional)</span></label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5 md:gap-3">
                   {PROMO_GOALS.map(g => {
                     const Icon = goalIcons[g.icon] || Sparkles;
                     const sel  = form.goal === g.id;
@@ -275,8 +277,8 @@ export default function PariwaraForm({ onSubmit }: Props) {
                         onClick={() => setForm(p => ({ ...p, goal: p.goal === g.id ? '' : g.id }))}
                         className={`choice-card ${sel ? 'selected' : ''}`}
                       >
-                        <Icon className="w-4 h-4 flex-shrink-0" style={{ color: sel ? 'var(--sage)' : 'var(--text-muted)' }} />
-                        <span className="text-xs font-bold text-ink leading-snug">{g.name}</span>
+                        <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" style={{ color: sel ? 'var(--sage)' : 'var(--text-muted)' }} />
+                        <span className="text-sm md:text-base font-bold text-ink leading-snug">{g.name}</span>
                       </button>
                     );
                   })}
@@ -404,31 +406,31 @@ export default function PariwaraForm({ onSubmit }: Props) {
           {step === 2 && (
             <motion.div key="s2"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }} className="space-y-4">
+              transition={{ duration: 0.18 }} className="space-y-5 md:space-y-6">
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Mau iklan di mana?</h3>
-                <p className="text-sm text-muted mt-1 leading-relaxed">
+                <h3 className="text-lg md:text-xl font-display font-bold text-ink">Mau iklan di mana?</h3>
+                <p className="text-sm md:text-base text-muted mt-1.5 leading-relaxed">
                   Pilih saluran media yang akan kamu gunakan. Bisa lebih dari satu.
                 </p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {MEDIA_CATEGORIES.map(m => {
                   const Icon = mediaIcons[m.icon] || Globe;
                   const sel  = form.selectedMedia.includes(m.id);
                   return (
                     <button key={m.id} type="button" onClick={() => toggle('selectedMedia', m.id)}
                       className={`choice-card w-full text-left ${sel ? 'selected' : ''}`}>
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+                      <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
                            style={{ background: sel ? 'var(--sage-btn)' : 'var(--bg-card)', color: sel ? 'white' : 'var(--text-muted)' }}>
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-4 h-4 md:w-5 md:h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-ink">{m.name}</div>
-                        <div className="text-xs text-muted mt-0.5 leading-snug">{m.description}</div>
+                        <div className="text-sm md:text-base font-bold text-ink">{m.name}</div>
+                        <div className="text-xs md:text-sm text-muted mt-1 leading-snug">{m.description}</div>
                       </div>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
                            style={{ background: sel ? 'var(--sage-btn)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
-                        {sel && <Check className="w-2.5 h-2.5" />}
+                        {sel && <Check className="w-3 h-3" />}
                       </div>
                     </button>
                   );
@@ -441,37 +443,37 @@ export default function PariwaraForm({ onSubmit }: Props) {
           {step === 3 && (
             <motion.div key="s3"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }} className="space-y-4">
+              transition={{ duration: 0.18 }} className="space-y-5 md:space-y-6">
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Siapa target pembelimu?</h3>
-                <p className="text-sm text-muted mt-1 leading-relaxed">
+                <h3 className="text-lg md:text-xl font-display font-bold text-ink">Siapa target pembelimu?</h3>
+                <p className="text-sm md:text-base text-muted mt-1.5 leading-relaxed">
                   Pilih kelompok usia yang paling mungkin membeli produkmu. Bisa lebih dari satu.
                 </p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {TARGET_GENERATIONS.map(g => {
                   const Icon = genIcons[g.icon] || Flame;
                   const sel  = form.selectedGenerations.includes(g.id);
                   return (
                     <button key={g.id} type="button" onClick={() => toggle('selectedGenerations', g.id)}
                       className={`choice-card w-full text-left ${sel ? 'selected' : ''}`}>
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+                      <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
                            style={{ background: sel ? 'var(--sage-btn)' : 'var(--bg-card)', color: sel ? 'white' : 'var(--text-muted)' }}>
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-4 h-4 md:w-5 md:h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-xs font-bold text-ink">{g.name}</span>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-sm md:text-base font-bold text-ink">{g.name}</span>
                           <span className="text-xs font-code px-1.5 py-0.5 rounded-md border border-theme"
                                 style={{ background: 'var(--bg-card)', color: 'var(--text-muted)' }}>
                             {g.span}
                           </span>
                         </div>
-                        <p className="text-xs text-muted leading-snug">{g.description}</p>
+                        <p className="text-xs md:text-sm text-muted leading-snug">{g.description}</p>
                       </div>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${sel ? 'text-white' : 'border-theme bg-card'}`}
                            style={{ background: sel ? 'var(--sage-btn)' : undefined, borderColor: sel ? 'var(--sage)' : undefined }}>
-                        {sel && <Check className="w-2.5 h-2.5" />}
+                        {sel && <Check className="w-3 h-3" />}
                       </div>
                     </button>
                   );
@@ -484,10 +486,10 @@ export default function PariwaraForm({ onSubmit }: Props) {
           {step === 4 && (
             <motion.div key="s4"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }} className="space-y-4">
+              transition={{ duration: 0.18 }} className="space-y-5 md:space-y-6">
               <div>
-                <h3 className="text-base font-display font-bold text-ink">Jualan di mana?</h3>
-                <p className="text-sm text-muted mt-1 leading-relaxed">
+                <h3 className="text-lg md:text-xl font-display font-bold text-ink">Jualan di mana?</h3>
+                <p className="text-sm md:text-base text-muted mt-1.5 leading-relaxed">
                   Tambahkan kota, provinsi, atau marketplace. Strategi akan disesuaikan dengan area pilihanmu.
                 </p>
               </div>
@@ -548,25 +550,25 @@ export default function PariwaraForm({ onSubmit }: Props) {
         </AnimatePresence>
 
         {/* ── Footer navigation ── */}
-        <div className="mt-6 pt-4 border-t border-theme">
+        <div className="mt-8 pt-5 border-t border-theme">
           <div className="flex items-center gap-3">
-            {step > 1 && (
+            {(step > 1 || onBack) && (
               <button type="button" onClick={goBack}
-                className="btn-secondary flex-none px-4 gap-1.5"
+                className="btn-secondary flex-none px-5 gap-1.5"
                 style={{ width: 'auto' }}>
                 <ChevronLeft className="w-4 h-4" /> Kembali
               </button>
             )}
             <button type="button" onClick={goNext} disabled={!isStepValid()} className="btn-primary flex-1 gap-1.5">
               {step === 4 ? (
-                <><Sparkles className="w-4 h-4" /> Analisa Sekarang</>
+                <><Sparkles className="w-4 h-4 md:w-5 md:h-5" /> Analisa Sekarang</>
               ) : (
-                <>Lanjut <ChevronRight className="w-4 h-4" /></>
+                <>Lanjut <ChevronRight className="w-4 h-4 md:w-5 md:h-5" /></>
               )}
             </button>
           </div>
           {attemptedNext && !isStepValid() && (
-            <p className="text-xs text-center mt-2" style={{ color: 'var(--amber-text)' }}>
+            <p className="text-xs md:text-sm text-center mt-2.5" style={{ color: 'var(--amber-text)' }}>
               {STEP_ERROR[step]}
             </p>
           )}

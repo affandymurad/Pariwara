@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, ArrowRight } from 'lucide-react';
 import Header from './components/Header';
 import PariwaraForm from './components/PariwaraForm';
 import AnalysisResult from './components/AnalysisResult';
+import StatInfographics from './components/StatInfographics';
 import type { PariwaraFormData } from './types';
 
 const WHATSAPP_CHECKLIST = `Yuk siapkan dulu sebelum isi Pariwara:
@@ -16,33 +17,44 @@ const WHATSAPP_CHECKLIST = `Yuk siapkan dulu sebelum isi Pariwara:
 
 Catat jawabannya, nanti tinggal isi cepat di Pariwara! 🚀`;
 
+type Screen = 'landing' | 'form' | 'result';
+
 export default function App() {
+  const [screen, setScreen]     = useState<Screen>('landing');
   const [formData, setFormData] = useState<PariwaraFormData | null>(null);
 
-  const handleSubmit = (data: PariwaraFormData) => {
-    setFormData(data);
+  const goTo = (next: Screen) => {
+    setScreen(next);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleStart  = () => goTo('form');
+  const handleBack   = () => goTo('landing');
+  const handleSubmit = (data: PariwaraFormData) => {
+    setFormData(data);
+    goTo('result');
+  };
   const handleReset = () => {
     setFormData(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    goTo('landing');
   };
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
-      <Header />
+      <Header onLogoClick={handleReset} />
 
-      <main className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 md:px-8 lg:px-12 py-5 pb-16 space-y-4">
+      <main className="max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 md:px-8 py-6 md:py-10 pb-16 md:pb-24 space-y-4">
         <AnimatePresence mode="wait">
-          {!formData ? (
+
+          {/* ═══ SCREEN 1 — Landing / marketing ═══ */}
+          {screen === 'landing' && (
             <motion.div
-              key="form"
+              key="landing"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.22 }}
-              className="space-y-4"
+              className="space-y-5 md:space-y-6"
             >
               {/* ── Hero banner ── */}
               <div className="card relative overflow-hidden">
@@ -50,12 +62,11 @@ export default function App() {
                 <div className="absolute top-0 left-0 right-0 h-[3px]"
                      style={{ background: 'linear-gradient(90deg, var(--sage), var(--amber), var(--text-muted))' }} />
 
-                {/* Always-visible hero content */}
-                <div className="px-4 pt-5 pb-4 text-center">
-                  <h2 className="text-lg font-display font-bold text-ink mb-2">
+                <div className="px-5 md:px-10 pt-8 md:pt-12 pb-6 md:pb-10 text-center">
+                  <h2 className="text-xl md:text-3xl lg:text-4xl font-display font-bold text-ink mb-3 md:mb-4 leading-tight">
                     Bikin Iklan yang Menarik, Tanpa Bingung ✨
                   </h2>
-                  <p className="text-sm text-muted leading-relaxed mb-4">
+                  <p className="text-sm md:text-base text-muted leading-relaxed mb-5 md:mb-6 max-w-lg mx-auto">
                     Cukup ceritakan usahamu. <strong className="text-ink2">Pariwara</strong> bantu susun
                     target pelanggan, ide promosi, caption, sampai media promosi yang paling cocok — dalam hitungan menit.
                   </p>
@@ -64,14 +75,13 @@ export default function App() {
                     href={`https://wa.me/?text=${encodeURIComponent(WHATSAPP_CHECKLIST)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75 mb-3"
+                    className="inline-flex items-center gap-1.5 text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-theme transition-all hover:opacity-75 mb-5 md:mb-6"
                     style={{ color: 'var(--sage-text)', background: 'var(--sage-light)', borderColor: 'var(--sage-light)' }}
                   >
                     📋 Siapkan Jawaban Dulu via WhatsApp
                   </a>
 
-                  {/* Insight Pariwara — always visible */}
-                  <div className="rounded-xl p-3 text-left text-xs leading-relaxed"
+                  <div className="rounded-xl p-4 text-left text-xs md:text-sm leading-relaxed max-w-lg mx-auto"
                        style={{ background: 'var(--amber-light)', color: 'var(--text-ink2)' }}>
                     <strong style={{ color: 'var(--amber-text)' }}>Insight Pariwara:</strong>{' '}
                     Kuliner, Kriya & Fashion menguasai <strong>89,5%</strong> lapangan kerja ekraf.
@@ -81,9 +91,9 @@ export default function App() {
               </div>
 
               {/* ── Contoh sukses: sebelum & sesudah ── */}
-              <div className="card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-code font-bold uppercase tracking-wider text-muted">
+              <div className="card p-5 md:p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs md:text-sm font-code font-bold uppercase tracking-wider text-muted">
                     Contoh Sebelum &amp; Sesudah
                   </p>
                   <span className="param-tag" style={{ background: 'var(--amber-light)', color: 'var(--amber-text)' }}>
@@ -92,9 +102,9 @@ export default function App() {
                 </div>
 
                 {/* Sebelum */}
-                <div className="rounded-xl p-3 border border-theme opacity-70" style={{ background: 'var(--bg-stone)' }}>
-                  <p className="text-xs font-code font-bold uppercase tracking-wider text-muted mb-1">😐 Sebelum</p>
-                  <p className="text-sm text-ink2 italic">"Beli bakso yuk"</p>
+                <div className="rounded-xl p-4 border border-theme opacity-70" style={{ background: 'var(--bg-stone)' }}>
+                  <p className="text-xs md:text-sm font-code font-bold uppercase tracking-wider text-muted mb-1.5">😐 Sebelum</p>
+                  <p className="text-sm md:text-base text-ink2 italic">"Beli bakso yuk"</p>
                 </div>
 
                 {/* Panah transisi */}
@@ -106,29 +116,51 @@ export default function App() {
                 </div>
 
                 {/* Sesudah */}
-                <div className="rounded-xl p-3 pt-4 border-l-4"
+                <div className="rounded-xl p-4 pt-5 border-l-4 mt-1"
                      style={{ background: 'var(--sage-light)', borderLeftColor: 'var(--sage)' }}>
-                  <p className="text-xs font-code font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--sage-text)' }}>
+                  <p className="text-xs md:text-sm font-code font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--sage-text)' }}>
                     ✨ Sesudah pakai Pariwara
                   </p>
-                  <p className="text-sm text-ink2 italic leading-relaxed">
+                  <p className="text-sm md:text-base text-ink2 italic leading-relaxed">
                     "Cuaca dingin paling pas ditemani semangkuk bakso hangat. Datang hari ini, beli 2 gratis es teh! 🍜🔥"
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     <span className="param-tag" style={{ background: 'var(--bg-card)', color: 'var(--sage-text)' }}>❄️ Ada suasana</span>
                     <span className="param-tag" style={{ background: 'var(--bg-card)', color: 'var(--sage-text)' }}>🎁 Ada promo</span>
                     <span className="param-tag" style={{ background: 'var(--bg-card)', color: 'var(--sage-text)' }}>📣 Ada ajakan jelas</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-muted text-center mt-3">
+                <p className="text-xs md:text-sm text-muted text-center mt-4">
                   Hasil serupa bisa kamu dapat untuk usahamu sendiri — dalam hitungan menit.
                 </p>
               </div>
 
-              <PariwaraForm onSubmit={handleSubmit} />
+              {/* ── Data industri pendukung ── */}
+              <StatInfographics />
+
+              {/* ── CTA mulai ── */}
+              <button type="button" onClick={handleStart} className="btn-primary w-full gap-1.5">
+                Mulai Buat Iklan <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
             </motion.div>
-          ) : (
+          )}
+
+          {/* ═══ SCREEN 2 — Form wizard ═══ */}
+          {screen === 'form' && (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.22 }}
+            >
+              <PariwaraForm onSubmit={handleSubmit} onBack={handleBack} />
+            </motion.div>
+          )}
+
+          {/* ═══ SCREEN 3 — Hasil analisis ═══ */}
+          {screen === 'result' && formData && (
             <motion.div
               key="result"
               initial={{ opacity: 0, scale: 0.98 }}

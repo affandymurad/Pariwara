@@ -4,52 +4,56 @@
 
 @layer base {
   :root {
-    --bg-primary:   #F7F4F0;
-    --bg-surface:   #FDFCF9;
-    --bg-card:      #FFFFFF;
-    --bg-stone:     #F5F2EE;
-    --text-ink:     #1E1B18;
-    --text-ink2:    #3A3630;
-    --text-muted:   #6B6055;
-    --border:       rgba(0,0,0,0.09);
-    --sage:         #6B8F71;
-    --sage-light:   #EAF2EB;
-    --sage-dark:    #3D5C42;
-    --amber:        #C98A3A;
-    --amber-light:  #FDF3E3;
+    /* Softer, lower-contrast take on the earthy sage/amber palette — warm
+       off-white surfaces instead of pure white, muted (less saturated)
+       accents, and ink that stops short of true black. Meant to be easier
+       on the eyes over long reading sessions while keeping the same hues. */
+    --bg-primary:   #F6F3EE;
+    --bg-surface:   #FAF8F4;
+    --bg-card:      #FCFAF7;
+    --bg-stone:     #F1EDE7;
+    --text-ink:     #2A2521;
+    --text-ink2:    #45403A;
+    --text-muted:   #756B60;
+    --border:       rgba(0,0,0,0.08);
+    --sage:         #7C9B81;
+    --sage-light:   #EAF1EB;
+    --sage-dark:    #4A6350;
+    --amber:        #C6A166;
+    --amber-light:  #F6EFE2;
     /* Fixed (non theme-swapping) tokens: kept dark enough / consistent
        across light+dark so white/dark text on top always stays readable. */
-    --sage-btn:      #4F7657;
-    --neutral-btn:   #5C534A;
-    --amber-contrast:#2A1B08;
+    --sage-btn:      #5A7F60;
+    --neutral-btn:   #675E53;
+    --amber-contrast:#332417;
     /* Readable body-text variants of the accent colors. --amber/--sage are
        tuned to look good as icons/borders/light backgrounds, but are too
        washed out for text at 4.5:1 in light mode — use these instead
        whenever amber/sage is the actual text color, not just an accent. */
-    --amber-text:   #8B5E1E;
+    --amber-text:   #7C5E3B;
     --sage-text:    var(--sage-dark);
-    --danger-bg:    #FDF2F2;
-    --danger-text:  #DC2626;
+    --danger-bg:    #FBF1F0;
+    --danger-text:  #BC4A3C;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg-primary:   #0F0E0C;
-      --bg-surface:   #161412;
-      --bg-card:      #1A1815;
-      --bg-stone:     #1E1C19;
-      --text-ink:     #F0EDE8;
-      --text-ink2:    #D0CCC6;
-      --text-muted:   #9B9184;
-      --border:       rgba(255,255,255,0.09);
-      --sage:         #7BA882;
-      --sage-light:   #1A2E1C;
-      --sage-dark:    #9EC4A2;
-      --amber:        #D4943E;
-      --amber-light:  #2A1F0A;
-      --amber-text:   #D4943E;
-      --danger-bg:    #2A1212;
-      --danger-text:  #F87171;
+      --bg-primary:   #17150F;
+      --bg-surface:   #1C1A16;
+      --bg-card:      #201E19;
+      --bg-stone:     #26221D;
+      --text-ink:     #E7E2D9;
+      --text-ink2:    #C5BFB4;
+      --text-muted:   #948A7C;
+      --border:       rgba(255,255,255,0.08);
+      --sage:         #87AC8C;
+      --sage-light:   #223228;
+      --sage-dark:    #A7C9AA;
+      --amber:        #CDA269;
+      --amber-light:  #2E2517;
+      --amber-text:   #CDA269;
+      --danger-bg:    #2A1917;
+      --danger-text:  #DB8F82;
     }
   }
 
@@ -88,7 +92,7 @@
   }
 
   .btn-primary {
-    @apply flex items-center justify-center gap-2 w-full h-12 rounded-xl font-bold text-sm text-white transition-all active:scale-[0.98];
+    @apply flex items-center justify-center gap-2 w-full h-12 md:h-14 rounded-xl font-bold text-sm md:text-base text-white transition-all active:scale-[0.98];
     background-color: var(--sage-btn);
   }
   .btn-primary:hover { filter: brightness(0.9); }
@@ -99,7 +103,7 @@
   }
 
   .btn-secondary {
-    @apply flex items-center justify-center gap-2 w-full h-11 rounded-xl font-bold text-sm transition-all active:scale-[0.98] border;
+    @apply flex items-center justify-center gap-2 w-full h-11 md:h-14 rounded-xl font-bold text-sm md:text-base transition-all active:scale-[0.98] border;
     color: var(--text-ink2);
     border-color: var(--border);
     background-color: transparent;
@@ -107,12 +111,12 @@
   .btn-secondary:hover { background-color: var(--bg-stone); }
 
   .field-label {
-    @apply block text-[13px] font-bold uppercase tracking-[0.03em] mb-1.5;
+    @apply block text-[13px] md:text-sm font-bold uppercase tracking-[0.03em] mb-2;
     color: var(--text-ink2);
   }
 
   .text-field {
-    @apply w-full rounded-xl px-4 py-3 text-sm font-sans outline-none transition-all;
+    @apply w-full rounded-xl px-4 py-3.5 md:py-4 text-sm md:text-base font-sans outline-none transition-all;
     background-color: var(--bg-stone);
     border: 1.5px solid var(--border);
     color: var(--text-ink);
@@ -125,7 +129,7 @@
   }
 
   .choice-card {
-    @apply flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all;
+    @apply flex items-start gap-3 p-3.5 md:p-4 rounded-xl cursor-pointer transition-all;
     border: 1.5px solid var(--border);
     background-color: var(--bg-stone);
   }
@@ -163,7 +167,7 @@
 }
 
 @layer utilities {
-  .font-display { font-family: 'Playfair Display', ui-serif, Georgia, serif; }
+  .font-display { font-family: 'Nunito', ui-sans-serif, system-ui, sans-serif; }
   .font-code    { font-family: 'Fira Code', ui-monospace, monospace; }
 
   .text-ink    { color: var(--text-ink); }
