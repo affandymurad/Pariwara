@@ -30,16 +30,16 @@ export default function Header({ onLogoClick }: Props) {
         </button>
 
         {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <a
             href="https://affandymurad.github.io/"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 text-sm font-semibold px-2.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
+            className="flex items-center gap-1.5 text-sm font-semibold px-2.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75 whitespace-nowrap"
             style={{ background: 'var(--sage-light)', color: 'var(--sage)', borderColor: 'var(--sage-light)' }}
           >
-            <User className="w-3 h-3" />
-            Affandy Murad
+            <User className="w-3 h-3 flex-shrink-0" />
+            <span className="hidden sm:inline">Affandy Murad</span>
           </a>
         </div>
       </div>

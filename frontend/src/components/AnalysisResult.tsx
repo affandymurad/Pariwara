@@ -8,8 +8,8 @@ import type { PariwaraFormData, AIRecommendation } from '../types';
 import { MEDIA_CATEGORIES, TARGET_GENERATIONS } from '../data/statistics';
 import { useAnalyze } from '../hooks/useAnalyze';
 import { PARIWARA_DRAFT_KEY } from './PariwaraForm';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { pdf } from '@react-pdf/renderer';
+import PariwaraPDFDocument from '../pdf/PariwaraPDFDocument';
 
 interface Props {
   formData: PariwaraFormData;
@@ -76,152 +76,41 @@ export default function AnalysisResult({ formData, onReset }: Props) {
     onReset();
   };
 
+  const mediaNames = formData.selectedMedia.map(
+    id => MEDIA_CATEGORIES.find(m => m.id === id)?.name ?? id,
+  );
+
+  const genNames = formData.selectedGenerations.map(
+    id => TARGET_GENERATIONS.find(g => g.id === id)?.name ?? id,
+  );
+
   // ── PDF export ────────────────────────────────────────────────
+  // Built as a real PDF document (@react-pdf/renderer) instead of screenshotting
+  // the on-screen DOM — text stays sharp and the Yoga flexbox layout engine
+  // paginates automatically without ever cutting a card in half.
+  const [exporting, setExporting] = useState(false);
+
   const exportPDF = async () => {
     if (!rec) return;
-
-    const source = document.getElementById('pariwara-pdf-content');
-    if (!source) return;
-
-    const actionBar = document.getElementById('pariwara-action-bar');
-
-    // html2canvas cannot parse color-mix() or modern CSS color functions.
-    // 1) Override all CSS vars on :root to plain hex values
-    // 2) Walk all child elements and strip any inline style containing color-mix/color(
-    const SAFE: Record<string, string> = {
-      '--bg-primary':    '#F7F4F0',
-      '--bg-surface':    '#FDFCF9',
-      '--bg-card':       '#FFFFFF',
-      '--bg-stone':      '#F5F2EE',
-      '--text-ink':      '#1E1B18',
-      '--text-ink2':     '#3A3630',
-      '--text-muted':    '#6B6055',
-      '--border':        'rgba(0,0,0,0.09)',
-      '--sage':          '#6B8F71',
-      '--sage-light':    '#EAF2EB',
-      '--sage-dark':     '#3D5C42',
-      '--sage-text':     '#3D5C42',
-      '--sage-btn':      '#4F7657',
-      '--amber':         '#C98A3A',
-      '--amber-light':   '#FDF3E3',
-      '--amber-text':    '#8B5E1E',
-      '--amber-contrast':'#2A1B08',
-    };
-
-    const root = document.documentElement;
-    const prevVars: Record<string, string> = {};
-    Object.entries(SAFE).forEach(([k, v]) => {
-      prevVars[k] = root.style.getPropertyValue(k);
-      root.style.setProperty(k, v);
-    });
-
-    const allEls = document.querySelectorAll<HTMLElement>('*');
-    const stripped: Array<{ el: HTMLElement; prop: string; prev: string }> = [];
-    allEls.forEach(el => {
-      const s = el.style;
-      for (let i = s.length - 1; i >= 0; i--) {
-        const prop = s[i];
-        const val  = s.getPropertyValue(prop);
-        if (val.includes('color-mix(') || val.includes('color(')) {
-          stripped.push({ el, prop, prev: val });
-          s.removeProperty(prop);
-        }
-      }
-    });
-
+    setExporting(true);
     try {
-      if (actionBar) actionBar.style.display = 'none';
-
-      await document.fonts?.ready;
-
-      const canvas = await html2canvas(source, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: source.scrollWidth,
-        windowHeight: source.scrollHeight,
-        ignoreElements: (el: Element) => el.id === 'pariwara-action-bar' || el.hasAttribute('data-pdf-ignore'),
-      });
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const margin = 10;
-      const usableWidth = pageWidth - margin * 2;
-      const usableHeight = pageHeight - margin * 2;
-
-      const imgWidth = usableWidth;
-      const pxPerMm = canvas.width / imgWidth;
-      const pageCanvasHeightPx = Math.floor(usableHeight * pxPerMm);
-
-      let renderedHeightPx = 0;
-      let pageIndex = 0;
-
-      while (renderedHeightPx < canvas.height) {
-        const pageCanvas = document.createElement('canvas');
-        const pageCtx = pageCanvas.getContext('2d');
-
-        const sliceHeightPx = Math.min(
-          pageCanvasHeightPx,
-          canvas.height - renderedHeightPx,
-        );
-
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceHeightPx;
-
-        pageCtx?.drawImage(
-          canvas,
-          0,
-          renderedHeightPx,
-          canvas.width,
-          sliceHeightPx,
-          0,
-          0,
-          canvas.width,
-          sliceHeightPx,
-        );
-
-        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-        const pageImgHeight = sliceHeightPx / pxPerMm;
-
-        if (pageIndex > 0) pdf.addPage();
-
-        pdf.addImage(
-          pageImgData,
-          'JPEG',
-          margin,
-          margin,
-          imgWidth,
-          pageImgHeight,
-        );
-
-        renderedHeightPx += sliceHeightPx;
-        pageIndex += 1;
-      }
+      const blob = await pdf(
+        <PariwaraPDFDocument formData={formData} rec={rec} mediaNames={mediaNames} genNames={genNames} />,
+      ).toBlob();
 
       const safeName = formData.productName
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '_')
         .trim();
 
-      pdf.save(`Laporan_Pariwara_${safeName || 'Analisis'}.pdf`);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Laporan_Pariwara_${safeName || 'Analisis'}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
     } finally {
-      if (actionBar) actionBar.style.display = '';
-      Object.entries(prevVars).forEach(([k, v]) => {
-        if (v) root.style.setProperty(k, v);
-        else root.style.removeProperty(k);
-      });
-      stripped.forEach(({ el, prop, prev }) => el.style.setProperty(prop, prev));
+      setExporting(false);
     }
   };
 
@@ -316,17 +205,8 @@ export default function AnalysisResult({ formData, onReset }: Props) {
   }
 
   // ── Success state ─────────────────────────────────────────────
-  const mediaNames = formData.selectedMedia.map(
-    id => MEDIA_CATEGORIES.find(m => m.id === id)?.name ?? id,
-  );
-
-  const genNames = formData.selectedGenerations.map(
-    id => TARGET_GENERATIONS.find(g => g.id === id)?.name ?? id,
-  );
-
   return (
     <motion.div
-      id="pariwara-pdf-content"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-4 bg-white p-4"
@@ -470,7 +350,6 @@ export default function AnalysisResult({ formData, onReset }: Props) {
 
               <button
                 type="button"
-                data-pdf-ignore="true"
                 onClick={() => copyCaption(c.example, i)}
                 className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full border border-theme transition-all hover:opacity-75"
                 style={{ background: 'var(--bg-card)', color: 'var(--text-ink2)' }}
@@ -582,15 +461,16 @@ export default function AnalysisResult({ formData, onReset }: Props) {
 
       {/* Action bar */}
       <div
-        id="pariwara-action-bar"
         className="card p-3.5 flex flex-col gap-2.5 sticky bottom-4"
         style={{
           backdropFilter: 'blur(12px)',
           background: 'color-mix(in srgb, var(--bg-card) 92%, transparent)',
         }}
       >
-        <button onClick={exportPDF} className="btn-primary h-14 text-sm gap-2">
-          <Download className="w-5 h-5" /> Download Laporan PDF
+        <button onClick={exportPDF} disabled={exporting} className="btn-primary h-14 text-sm gap-2">
+          {exporting
+            ? <>Menyiapkan PDF...</>
+            : <><Download className="w-5 h-5" /> Download Laporan PDF</>}
         </button>
 
         <button onClick={() => setConfirmReset(true)} className="btn-secondary gap-2">

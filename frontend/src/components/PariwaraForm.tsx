@@ -275,10 +275,10 @@ export default function PariwaraForm({ onSubmit, onBack }: Props) {
                         key={g.id}
                         type="button"
                         onClick={() => setForm(p => ({ ...p, goal: p.goal === g.id ? '' : g.id }))}
-                        className={`choice-card ${sel ? 'selected' : ''}`}
+                        className={`choice-card ${sel ? 'selected' : ''} min-w-0`}
                       >
                         <Icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" style={{ color: sel ? 'var(--sage)' : 'var(--text-muted)' }} />
-                        <span className="text-sm md:text-base font-bold text-ink leading-snug">{g.name}</span>
+                        <span className="flex-1 min-w-0 text-sm md:text-base font-bold text-ink leading-snug break-words">{g.name}</span>
                       </button>
                     );
                   })}
